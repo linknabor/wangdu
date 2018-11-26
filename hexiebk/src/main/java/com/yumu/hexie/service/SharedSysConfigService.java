@@ -5,7 +5,6 @@
 package com.yumu.hexie.service;
 
 import com.yumu.hexie.integration.wechat.entity.AccessToken;
-import com.yumu.hexie.model.system.SystemConfig;
 
 /**
  * <pre>
