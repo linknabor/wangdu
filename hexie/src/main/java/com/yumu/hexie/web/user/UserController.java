@@ -18,11 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.StringUtil;
-import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.user.UserWeiXin;
 import com.yumu.hexie.model.localservice.HomeServiceConstant;
 import com.yumu.hexie.model.promotion.coupon.Coupon;
@@ -75,17 +73,15 @@ public class UserController extends BaseController{
 	@RequestMapping(value = "/userInfo", method = RequestMethod.GET)
 	@ResponseBody
     public BaseResult<UserInfo> userInfo(HttpSession session,@ModelAttribute(Constants.USER)User user) throws Exception {
-		log.error("进入userInfo接口");
 		user = userService.getById(user.getId());
         log.error("userInfo的user "+ user);
         if(user != null){
-        	if (StringUtil.isEmpty(user.getOpenid())) {
-    			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
-			}
+//        	if (StringUtil.isEmpty(user.getOpenid())) {
+//    			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
+//			}
         	session.setAttribute(Constants.USER, user);
-        	UserInfo userinfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
-        	log.error("user.getOfficeTel = "+ user.getOfficeTel());
-            return new BaseResult<UserInfo>().success(userinfo);
+            log.error("user.getOfficeTel = "+ user.getOfficeTel());
+            return new BaseResult<UserInfo>().success(new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId())));
         } else {
             return new BaseResult<UserInfo>().success(null);
         }
@@ -137,9 +133,9 @@ public class UserController extends BaseController{
             return new BaseResult<UserInfo>().failMsg("用户不存在！");
 		}
 		
-		if (StringUtil.isEmpty(userAccount.getBindOpenId())) {
-			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
-		}
+//		if (StringUtil.isEmpty(userAccount.getBindOpenId())) {
+//			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
+//		}
 
         return new BaseResult<UserInfo>().success(new UserInfo(userAccount,
             operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,userAccount.getId())));
@@ -250,38 +246,38 @@ public class UserController extends BaseController{
         }
     }
     
-    /**
-     * 绑定主公众号的openid
-     * @param user
-     * @param code
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "/bindWechat/{code}", method = RequestMethod.POST)
-    @ResponseBody
-    public BaseResult<String> bindMain(@ModelAttribute(Constants.USER)User user, @PathVariable String code) throws Exception {
-    	
-    	User currUser = userService.getById(user.getId());
-    	if (currUser == null) {
-    		return new BaseResult<String>().failMsg("user does not exist !");
-		}
-    	if (StringUtil.isEmpty(currUser.getBindOpenId())) {
-    		String openId = "";
-        	if (StringUtil.isNotEmpty(code)) {
-        		try {
-    				openId = userService.getBindOrSubscibeUserOpenIdByCode(code);
-    				currUser.setBindOpenId(openId);
-    	        	currUser.setBindAppId(ConstantWeChat.BIND_APPID);
-    	        	userService.save(currUser);
-    			} catch (Exception e) {
-    				throw new BizValidateException("get bind openid failed ! ");
-    			}
-        	}
-        	
-		}
-    	
-    	return new BaseResult<String>().success("bind succeeded!");
-    	
-    }
+//    /**
+//     * 绑定主公众号的openid
+//     * @param user
+//     * @param code
+//     * @return
+//     * @throws Exception
+//     */
+//    @RequestMapping(value = "/bindWechat/{code}", method = RequestMethod.POST)
+//    @ResponseBody
+//    public BaseResult<String> bindMain(@ModelAttribute(Constants.USER)User user, @PathVariable String code) throws Exception {
+//    	
+//    	User currUser = userService.getById(user.getId());
+//    	if (currUser == null) {
+//    		return new BaseResult<String>().failMsg("user does not exist !");
+//		}
+//    	if (StringUtil.isEmpty(currUser.getBindOpenId())) {
+//    		String openId = "";
+//        	if (StringUtil.isNotEmpty(code)) {
+//        		try {
+//    				openId = userService.getBindOrSubscibeUserOpenIdByCode(code);
+//    				currUser.setBindOpenId(openId);
+//    	        	currUser.setBindAppId(ConstantWeChat.BIND_APPID);
+//    	        	userService.save(currUser);
+//    			} catch (Exception e) {
+//    				throw new BizValidateException("get bind openid failed ! ");
+//    			}
+//        	}
+//        	
+//		}
+//    	
+//    	return new BaseResult<String>().success("bind succeeded!");
+//    	
+//    }
     
 }
