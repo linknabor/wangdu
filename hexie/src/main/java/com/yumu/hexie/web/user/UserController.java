@@ -74,13 +74,8 @@ public class UserController extends BaseController{
 	@ResponseBody
     public BaseResult<UserInfo> userInfo(HttpSession session,@ModelAttribute(Constants.USER)User user) throws Exception {
 		user = userService.getById(user.getId());
-        log.error("userInfo的user "+ user);
         if(user != null){
-//        	if (StringUtil.isEmpty(user.getOpenid())) {
-//    			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
-//			}
         	session.setAttribute(Constants.USER, user);
-            log.error("user.getOfficeTel = "+ user.getOfficeTel());
             return new BaseResult<UserInfo>().success(new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId())));
         } else {
             return new BaseResult<UserInfo>().success(null);
@@ -132,10 +127,6 @@ public class UserController extends BaseController{
 		if(userAccount == null) {
             return new BaseResult<UserInfo>().failMsg("用户不存在！");
 		}
-		
-//		if (StringUtil.isEmpty(userAccount.getBindOpenId())) {
-//			return new BaseResult<UserInfo>().failCode(BaseResult.NEED_MAIN_LOGIN); 
-//		}
 
         return new BaseResult<UserInfo>().success(new UserInfo(userAccount,
             operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,userAccount.getId())));
@@ -183,9 +174,7 @@ public class UserController extends BaseController{
 			if (list.size()>0) {
 				goTongService.sendSubscribeMsg(user);
 			}
-			
 		}
-		
 	}
 	
 	
@@ -198,7 +187,6 @@ public class UserController extends BaseController{
 		}
 	    return  new BaseResult<String>().success("验证码发送成功");
     }
-
 
 	@RequestMapping(value = "/savePersonInfo/{captcha}", method = RequestMethod.POST)
 	@ResponseBody
