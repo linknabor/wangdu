@@ -36,12 +36,12 @@ public class FileService {
 	/**
 	 * 上传文件URL
 	 */
-	private static String uploadFileUrl = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
-
+	private static String uploadFileUrl = "https://api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
+										   
 	/**
 	 * 下载文件URL
 	 */
-	private static String dwonloadFileURL = "http://file.api.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID";
+	private static String dwonloadFileURL = "https://api.weixin.qq.com/cgi-bin/media/get?access_token=ACCESS_TOKEN&media_id=MEDIA_ID";
 
 	/**
 	 * 上传多媒体文件
