@@ -30,7 +30,8 @@ public class QiniuController {
     private String accessKey;
     @Value(value = "${qiniu.secret.key}")
     private String secretKey;
-    public static final String BUCKET_NAME = "e-shequ";
+	@Value(value = "${qiniu_scope}")
+    private String BUCKET_NAME;
 
     @RequestMapping(value = "/api/qiniu/token", method = RequestMethod.GET)
     @ResponseBody
