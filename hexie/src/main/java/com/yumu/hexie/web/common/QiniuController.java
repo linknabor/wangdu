@@ -30,7 +30,7 @@ public class QiniuController {
     private String accessKey;
     @Value(value = "${qiniu.secret.key}")
     private String secretKey;
-	@Value(value = "${qiniu_scope}")
+	@Value(value = "${qiniu.scope}")
     private String BUCKET_NAME;
 
     @RequestMapping(value = "/api/qiniu/token", method = RequestMethod.GET)

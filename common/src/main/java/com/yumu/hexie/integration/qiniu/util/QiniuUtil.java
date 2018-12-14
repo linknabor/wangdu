@@ -68,7 +68,7 @@ public class QiniuUtil {
 		
 		accessKey = props.getProperty("qiniu.access.key");
 		secretKey = props.getProperty("qiniu.secret.key");
-		BUCKET_NAME = props.getProperty("qiniu_scope");
+		BUCKET_NAME = props.getProperty("qiniu.scope");
 	}
 	
 	/**
