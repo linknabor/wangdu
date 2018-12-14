@@ -39,7 +39,7 @@ public class QiniuUtil {
 	private static String upToken = null;
 	private static String accessKey = null;
 	private static String secretKey = null;
-	public static final String BUCKET_NAME = "e-shequ";
+	public static  String BUCKET_NAME = "e-shequ";
 	private static Mac mac = null;
 	private static RSClient client = null;
 	private static QiniuUtil instance = null;
@@ -68,7 +68,7 @@ public class QiniuUtil {
 		
 		accessKey = props.getProperty("qiniu.access.key");
 		secretKey = props.getProperty("qiniu.secret.key");
-		
+		BUCKET_NAME = props.getProperty("qiniu_scope");
 	}
 	
 	/**
