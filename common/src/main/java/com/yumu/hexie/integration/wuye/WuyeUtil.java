@@ -2,6 +2,7 @@ package com.yumu.hexie.integration.wuye;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Properties;
 
@@ -59,7 +60,7 @@ public class WuyeUtil {
 	private static final String QUICK_PAY_URL = "quickPaySDO.do?stmt_id=%s&curr_page=%s&total_count=%s"; // 快捷支付
 	private static final String WXLOGIN_URL = "weixinLoginSDO.do?weixin_id=%s"; // 登录验证（微信登录）
 	private static final String WX_PAY_URL = "wechatPayRequestSDO.do?user_id=%s&bill_id=%s&stmt_id=%s&openid=%s&coupon_unit=%s&coupon_num=%s"
-			+ "&coupon_id=%s&from_sys=%s&mianBill=%s&mianAmt=%s&reduceAmt=%s"; // 微信支付请求
+			+ "&coupon_id=%s&from_sys=%s&mianBill=%s&mianAmt=%s&reduceAmt=%s&invoice_title_type=%s&credit_code=%s&mobile=%s&invoice_title=%s"; // 微信支付请求
 	private static final String WX_PAY_NOTICE = "wechatPayQuerySDO.do?user_id=%s&bill_id=%s&stmt_id=%s&trade_water_id=%s&package=%s"; // 微信支付返回
 	//private static final String GET_LOCATION_URL = "getGeographicalPositionSDO.do"; // 用户地理位置
 	private static final String COUPON_USE_QUERY_URL = "conponUseQuerySDO.do?user_id=%s";
@@ -132,15 +133,17 @@ public class WuyeUtil {
 	}
 	// 10.缴费
 	public static BaseResult<WechatPayInfo> getPrePayInfo(String userId,String billId,String stmtId,String openId,
-		String couponUnit, String couponNum, String couponId,String mianBill,String mianAmt, String reduceAmt) throws ValidationException {
+		String couponUnit, String couponNum, String couponId,String mianBill,String mianAmt, String reduceAmt,
+		String invoice_title_type, String credit_code, String mobile, String invoice_title) throws Exception {
+		invoice_title = URLEncoder.encode(invoice_title,"GBK");
 		String url = REQUEST_ADDRESS + String.format(WX_PAY_URL, userId,billId,stmtId,openId,
-					couponUnit,couponNum,couponId,SYSTEM_NAME,mianBill, mianAmt, reduceAmt);
-	
+					couponUnit,couponNum,couponId,SYSTEM_NAME,mianBill, mianAmt, reduceAmt, invoice_title_type, credit_code, mobile, invoice_title);
+		
 		BaseResult baseResult = httpGet(url,WechatPayInfo.class);
 		if (!baseResult.isSuccess()) {
 			throw new ValidationException(baseResult.getData().toString());
 		}
-		return (BaseResult<WechatPayInfo>)httpGet(url,WechatPayInfo.class);
+		return (BaseResult<WechatPayInfo>)baseResult;
 	}
 	
 	// 11.通知已支付
