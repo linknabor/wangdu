@@ -176,8 +176,10 @@ public class WuyeServiceImpl implements WuyeService {
 	@Override
 	public WechatPayInfo getPrePayInfo(String userId, String billId,
 			String stmtId, String openId, String couponUnit, String couponNum, 
-			String couponId,String mianBill,String mianAmt, String reduceAmt) throws ValidationException {
-		return WuyeUtil.getPrePayInfo(userId, billId, stmtId, openId, couponUnit, couponNum, couponId,mianBill,mianAmt, reduceAmt)
+			String couponId,String mianBill,String mianAmt, String reduceAmt, 
+			String invoice_title_type, String credit_code, String mobile, String invoice_title) throws Exception {
+		return WuyeUtil.getPrePayInfo(userId, billId, stmtId, openId, couponUnit, couponNum, couponId,mianBill,mianAmt, reduceAmt, 
+				invoice_title_type, credit_code, mobile, invoice_title)
 				.getData();
 	}
 
