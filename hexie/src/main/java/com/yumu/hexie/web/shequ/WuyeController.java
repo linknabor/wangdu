@@ -121,11 +121,8 @@ public class WuyeController extends BaseController {
 		com.yumu.hexie.integration.wuye.resp.BaseResult<String> r = wuyeService.deleteHouse(user, user.getWuyeId(), houseId);
 		if ((boolean)r.isSuccess()) {
 			//添加电话到user表
-			log.error("这里是删除房子后保存的电话");
-			log.error("保存电话到user表==》开始");
 			user.setOfficeTel(r.getData());
 			userService.save(user);
-			log.error("保存电话到user表==》成功");
 			return BaseResult.successResult("删除房子成功！");
 		} else {
 			return BaseResult.fail("删除房子失败！");
@@ -153,11 +150,8 @@ public class WuyeController extends BaseController {
 		if(u != null) {
 			pointService.addZhima(user, 1000, "zhima-house-"+user.getId()+"-"+houseId);
 			//添加电话到user表
-			log.error("这里是添加房子后保存的电话");
-			log.error("保存电话到user表==》开始");
 			user.setOfficeTel(u.getOffice_tel());
 			userService.save(user);
-			log.error("保存电话到user表==》成功");
 		}
 		
 		return BaseResult.successResult(u);
@@ -191,7 +185,6 @@ public class WuyeController extends BaseController {
 	public BaseResult<PaymentInfo> queryPaymentDetail(@ModelAttribute(Constants.USER)User user,@PathVariable String trade_water_id)
 					throws Exception {
 		PaymentInfo info = wuyeService.queryPaymentDetail(user.getWuyeId(),trade_water_id);
-//		PayWaterListVO  listVo = wuyeService.queryPaymentList(user.getWuyeId(), startDate, endDate);
 		if (info != null) {
 			return BaseResult.successResult(info);
 		} else {
@@ -238,12 +231,14 @@ public class WuyeController extends BaseController {
 			@RequestParam(required=false) String billId,@RequestParam(required=false) String stmtId,
 			@RequestParam(required=false) String couponUnit, @RequestParam(required=false) String couponNum,
 			@RequestParam(required=false) String couponId, @RequestParam(required=false) String mianBill,
-			@RequestParam(required=false) String mianAmt, @RequestParam(required=false) String reduceAmt)
+			@RequestParam(required=false) String mianAmt, @RequestParam(required=false) String reduceAmt,
+			@RequestParam(required=false) String invoice_title_type, @RequestParam(required=false) String credit_code,
+			@RequestParam(required=false) String invoice_title)
 			throws Exception {
 		WechatPayInfo result;
 		try {
 			result = wuyeService.getPrePayInfo(user.getWuyeId(), billId, stmtId, user.getOpenid(), 
-						couponUnit, couponNum, couponId, mianBill, mianAmt, reduceAmt);
+					couponUnit, couponNum, couponId, mianBill, mianAmt, reduceAmt, invoice_title_type, credit_code, user.getTel(), invoice_title);
 		} catch (Exception e) {
 			
 			e.printStackTrace();
