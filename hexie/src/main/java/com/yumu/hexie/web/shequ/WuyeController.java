@@ -1,5 +1,6 @@
 package com.yumu.hexie.web.shequ;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -7,8 +8,10 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -18,9 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
+import com.yumu.hexie.common.util.MD5Util;
 import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
@@ -71,6 +77,9 @@ public class WuyeController extends BaseController {
     @Inject
 	private SystemConfigService systemConfigService;
 
+    @Autowired
+    private RestTemplate restTemplate;
+    
 	/*****************[BEGIN]房产********************/
 	@RequestMapping(value = "/hexiehouses", method = RequestMethod.GET)
 	@ResponseBody
@@ -455,6 +464,25 @@ public class WuyeController extends BaseController {
 		TemplateMsgService.sendWuYePaySuccessMsg(user, tradeWaterId, feePrice, systemConfigService.queryWXAToken());
 	}
 	
+	/**
+	 * 获取第三方的优惠券接口
+	 * @param user
+	 * @return
+	 */
+	@RequestMapping(value = "/getOutsidCoupon", method = RequestMethod.POST)
+	@ResponseBody
+	public String getOutsidCoupon(@ModelAttribute(Constants.USER)User user) {
+		
+		String url = "http://www.gm4life.cn/yueshop/wap/promotion/appCouponGet";
+		long time = System.currentTimeMillis();
+		String key = "f37d62b840357c5949e4c68efcb6a0f7";
+		String md5Key = MD5Util.MD5Encode(String.valueOf(time).concat(key), "UTF-8");
+		url = url.concat("?time="+time).concat("&key="+md5Key);
+		log.error("getOutsidCoupon url :" + url);
+		String context = restTemplate.getForObject(url, String.class);
+		log.error("getOutsidCoupon response context :" + context);
+		return context;
+	}
 	
 	@SuppressWarnings({ "rawtypes" })
 	@RequestMapping(value = "initSession4Test/{userId}", method = RequestMethod.GET)

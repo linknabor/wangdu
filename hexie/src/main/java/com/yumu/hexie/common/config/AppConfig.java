@@ -32,12 +32,15 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.client.RestTemplate;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.yumu.hexie.model.localservice.HomeCart;
@@ -219,5 +222,18 @@ public class AppConfig {
     	RedisCacheManager m = new RedisCacheManager(getRedisTemplate());
     	m.setDefaultExpiration(1800);//
     	return m;
+    }
+    
+    @Bean
+    public RestTemplate restTemplate(ClientHttpRequestFactory factory){
+        return new RestTemplate(factory);
+    }
+    
+    @Bean
+    public ClientHttpRequestFactory simpleClientHttpRequestFactory(){
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(15000);
+        factory.setReadTimeout(5000);
+        return factory;
     }
 }
