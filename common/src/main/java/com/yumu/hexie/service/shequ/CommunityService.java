@@ -194,5 +194,14 @@ public interface CommunityService {
 	 * @return
 	 */
 	public List<Thread> getThreadListByUserId(String category, long userId, Pageable page);
+
+	public void updateThreadComment(ThreadComment thread);
 	
+	/**
+	 * 根据帖子回复信息ID获取具体的帖子信息
+	 * @param user
+	 * @param ThreadId
+	 * @return
+	 */
+	public ThreadComment getThreadCommentByTreadId(long threadCommentId);
 }

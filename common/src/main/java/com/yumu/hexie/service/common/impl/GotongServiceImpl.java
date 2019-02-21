@@ -20,12 +20,15 @@ import org.springframework.stereotype.Service;
 import com.yumu.hexie.common.util.ConfigUtil;
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.customer.Article;
+import com.yumu.hexie.integration.wechat.entity.customer.DataJsonVo;
+import com.yumu.hexie.integration.wechat.entity.customer.DataVo;
 import com.yumu.hexie.integration.wechat.entity.customer.News;
 import com.yumu.hexie.integration.wechat.entity.customer.NewsMessage;
+import com.yumu.hexie.integration.wechat.entity.customer.Template;
 import com.yumu.hexie.integration.wechat.service.CustomService;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
-import com.yumu.hexie.model.community.ThreadOperator;
-import com.yumu.hexie.model.community.ThreadOperatorRepository;
+import com.yumu.hexie.model.community.Staffing;
+import com.yumu.hexie.model.community.StaffingRepository;
 import com.yumu.hexie.model.localservice.ServiceOperator;
 import com.yumu.hexie.model.localservice.ServiceOperatorRepository;
 import com.yumu.hexie.model.localservice.bill.YunXiyiBill;
@@ -61,6 +64,10 @@ public class GotongServiceImpl implements GotongService {
     
     public static String THREAD_NOTICE_URL = ConfigUtil.get("threadUrl");
     
+    public static String TEMPLATE_NOTICE_URL = ConfigUtil.get("templateUrl");
+    
+    public static String TEMPLATE_NOTICE_ID = ConfigUtil.get("templateId");
+    
     public static String THREAD_NOTICE_DESC = "业主姓名：NAME\r联系方式：TEL\r业主地址：CELL_ADDR\r消息类型：CATEGORY\r消息内容：CONTENT";
     
     public static Map<String, String>categoryMap;
@@ -84,8 +91,8 @@ public class GotongServiceImpl implements GotongService {
     @Inject
     private SystemConfigService systemConfigService;
     @Inject
-    private ThreadOperatorRepository threadOperatorRepository;
-
+    private  StaffingRepository staffingRepository;
+    
     @Async
     @Override
     public void sendRepairAssignMsg(long opId,RepairOrder order,int distance){
@@ -170,69 +177,66 @@ public class GotongServiceImpl implements GotongService {
         
     }
     
+    /**
+     * 发送模板消息
+     */
     @Async
 	@Override
 	public void sendThreadPubNotify(User user, com.yumu.hexie.model.community.Thread thread) {
-
-    	LOG.error("发送管家帖子发布通知, threadId: ["+thread.getThreadId()+"]");
-    	 
-    	List<ThreadOperator> list = threadOperatorRepository.findAll();
-		for (ThreadOperator threadOperator : list) {
-			if ("3".equals(threadOperator.getRegionType())) {
-				if (!user.getSect_id().equals(threadOperator.getRegionSectId())) {
-					continue;
-				}
-			}
-			LOG.error("发送到操作员 id:" + threadOperator.getId() + ", name : " + threadOperator.getUserName());
-			
-			Article article = new Article();
-			article.setTitle("管家服务有新消息发布");
-			
-//			String name = user.getName();
-//			String tel = user.getTel();
-//			String cell_addr = user.getCell_addr();
-//			String category = thread.getThreadCategory();
-//			String content = thread.getThreadContent();
-//			
-//			LOG.error("name:"+name+",tel:"+tel+",cell_addr:"+cell_addr+"category:"+category+"content:"+content);
-//			LOG.error(String.valueOf(categoryMap.entrySet().size()));
-			
-			String desc = THREAD_NOTICE_DESC.replace("NAME", user.getName()).
-					replace("TEL", user.getTel()==null?"":user.getTel()).replace("CELL_ADDR", user.getCell_addr()).
-					replace("CATEGORY", categoryMap.get(thread.getThreadCategory())).
-					replace("CONTENT", thread.getThreadContent());
-			
-			article.setDescription(desc);
-			article.setUrl(THREAD_NOTICE_URL+thread.getThreadId());
-			
-			News news = new News(new ArrayList<Article>());
-			news.getArticles().add(article);
-			NewsMessage msg = new NewsMessage(news);
-			msg.setTouser(threadOperator.getOpenId());
-			msg.setMsgtype(ConstantWeChat.RESP_MESSAGE_TYPE_NEWS);
-			
-			String accessToken = systemConfigService.queryWXAToken();
-			CustomService.sendCustomerMessage(msg, accessToken);
+    	String sect_id = user.getSect_id();
+    	List<Staffing> list = staffingRepository.getStaffing(sect_id);
+    	for (int i = 0; i < list.size(); i++) {
+    		User useropenId = userService.getById(Long.parseLong(list.get(i).getStaffing_userid()));
+    		pushweixin(useropenId.getOpenid(),TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()),TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getCell_addr(), "请点击查看具体信息");
 		}
-    	 
     }
     
     public static void main(String[] args) {
-	
-    	Article article = new Article();
-		article.setTitle("管家服务有新消息");
-		article.setDescription("业主姓名：yiming\r联系方式：18116419486\r业主地址：浦东新区三林路128弄1单元103室\r类型:测试 \r阿朵司法所飞洒发放的说法as范德萨发送发放阿斯蒂芬撒法撒旦法撒 阿朵司法所飞洒发放的说法as范德萨发送发放阿斯蒂芬撒法撒旦法撒");
-		article.setUrl("https://www.e-shequ.com/dhzj3/weixin/communities/threadDetail.html?threadId=11");
-		
-		News news = new News(new ArrayList<Article>());
-		news.getArticles().add(article);
-		NewsMessage msg = new NewsMessage(news);
-		msg.setTouser("o_3DlwdnCLCz3AbTrZqj4HtKeQYY");
-		msg.setMsgtype(ConstantWeChat.RESP_MESSAGE_TYPE_NEWS);
-		
-		String accessToken = "ZunBWUlbDfqe2AN4rVMOST70fD_kEImeDWyEORcqmtEKo6TxWgkP6IWQWsIJPP4jrFVo0OYtlOSABpV1sLDsD9QE-O_fMQAFAErTpO-xONrzVS_vKchuKSN57AHhRwDUIDIhAIAOJO";
-		CustomService.sendCustomerMessage(msg, accessToken);
     	
+    }
+    
+	@Override
+    public void pushweixin(String openId,String threadid,String template,String firstval,String keyword1val,String keyword2val,String keyword3val,String keyword4val,String remarkval) {
+    	Template msg = new Template();
+    	msg.setTouser(openId);//openID  wywOpenId:og0nw09cdaJZjwQlg8ICnsSCclTE 测试推送使用     测试机备份openid o08kOwJu6eA1Vr3cbV-Miqpm_EMA  内脏坏了
+    	msg.setUrl(threadid);//跳转地址
+    	msg.setTemplate_id(template);//模板id
+		DataVo data = new DataVo();
+		
+		DataJsonVo first = new DataJsonVo();
+		first.setValue(firstval); //标题
+		first.setColor("#173177");
+		data.setFirst(first);
+		
+		DataJsonVo keyword1 = new DataJsonVo();
+		keyword1.setValue(keyword1val);//内容1
+		keyword1.setColor("#173177"); 
+		data.setKeyword1(keyword1);
+		
+		DataJsonVo keyword2 = new DataJsonVo();
+		keyword2.setValue(keyword2val);//内容2
+		keyword2.setColor("#173177");
+		data.setKeyword2(keyword2);
+		
+		DataJsonVo keyword3 = new DataJsonVo();
+		keyword3.setValue(keyword3val);//内容3
+		keyword3.setColor("#173177");
+		data.setKeyword3(keyword3);
+		
+		DataJsonVo keyword4 = new DataJsonVo();
+		keyword4.setValue(keyword4val);//内容4
+		keyword4.setColor("#173177");
+		data.setKeyword4(keyword4);
+		
+		DataJsonVo remark = new DataJsonVo();
+		remark.setValue(remarkval);//结尾
+		remark.setColor("#173177");
+		data.setRemark(remark);
+		
+		msg.setData(data);
+//		String accessToken = systemConfigService.queryWXAToken();
+		String accessToken = "18_OMUjOTiLieCH7qbjBnGCvnMIA-Tm_8jeVH_1KNeYPZibssougXAsTsDEU1G_xCqrSyUZ2Lfo46YxqRCFvXo_rBq_V7-6Qp1DUstm2LKM5N4BS4QCAZ5VcBV1X5W3q48cledTIwcIaU3RSvSsWPPbABACVV";
+		CustomService.sendCustomerMessage(msg, accessToken);
     }
     
 }
