@@ -43,6 +43,7 @@ import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.common.SystemConfigService;
+import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
 import com.yumu.hexie.service.user.UserService;
 import com.yumu.hexie.web.BaseController;
@@ -165,6 +166,12 @@ public class CommunityController extends BaseController{
 		
 		User user = (User)session.getAttribute(Constants.USER);
 		
+		log.error("user_sect_id:"+user.getSect_id());
+		
+		user = userService.getById(user.getId());
+		
+		log.error("user_sect_id:"+user.getSect_id());
+		
 		if(thread.getThreadContent().length()>200){
 			
 			return BaseResult.fail("发布信息内容超过200字。");
@@ -231,17 +238,8 @@ public class CommunityController extends BaseController{
 		
 		User user = (User)session.getAttribute(Constants.USER);
 		
-		Long sect_id = null;
-		try {
-			sect_id = user.getXiaoquId();
-		} catch (Exception e) {
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
-		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
+		if(user == null){
+			throw new BizValidateException("请登录");
 		}
 		
 		Long threadId = thread.getThreadId();
@@ -497,17 +495,8 @@ public class CommunityController extends BaseController{
 		
 		User user = (User)session.getAttribute(Constants.USER);
 		
-		Long sect_id = null;
-		try {
-			sect_id = user.getXiaoquId();
-		} catch (Exception e) {
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
-		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
+		if(user == null){
+			throw new BizValidateException("请登录");
 		}
 		
 		//更新帖子回复数量及最后评论时间
@@ -729,17 +718,8 @@ public class CommunityController extends BaseController{
 		
 		User user = (User)session.getAttribute(Constants.USER);
 		
-		Long sect_id = null;
-		try {
-			sect_id = user.getXiaoquId();
-		} catch (Exception e) {
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
-		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
+		if(user == null){
+			throw new BizValidateException("请登录");
 		}
 		
 		communityService.deleteComment(user, comment.getCommentId());	//添加评论
@@ -765,17 +745,8 @@ public class CommunityController extends BaseController{
 		
 		User user = (User)session.getAttribute(Constants.USER);
 		
-		Long sect_id = null;
-		try {
-			sect_id = user.getXiaoquId();
-		} catch (Exception e) {
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
-		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
+		if(user == null){
+			throw new BizValidateException("请登录");
 		}
 		
 		String access_token = WeixinUtil.getToken();
@@ -795,17 +766,8 @@ public class CommunityController extends BaseController{
 		
 		User user = (User)session.getAttribute(Constants.USER);
 		
-		Long sect_id = null;
-		try {
-			sect_id = user.getXiaoquId();
-		} catch (Exception e) {
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
-		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.successResult(new ArrayList<Thread>());
+		if(user == null){
+			throw new BizValidateException("请登录");
 		}
 		
 		Thread ret = communityService.getThreadByTreadId(threadId);
@@ -831,7 +793,8 @@ public class CommunityController extends BaseController{
 		return BaseResult.successResult(map);
 	
 	}
-	
+
+
 	/**
 	 * 首页获取帖子列表
 	 * @param session
@@ -988,17 +951,8 @@ public class CommunityController extends BaseController{
 	public BaseResult<List<Annoucement>> getAnnoucementList(HttpSession session){
 		
 		User user = (User)session.getAttribute(Constants.USER);
-		Long sect_id = null;
-		try {
-			sect_id = user.getXiaoquId();
-		} catch (Exception e) {
-			
-			return BaseResult.fail("您还没有填写小区信息。");
-		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.fail("您还没有填写小区信息。");
+		if(user == null){
+			throw new BizValidateException("请登录");
 		}
 		
 		Sort sort = new Sort(Direction.DESC , "annoucementId");
