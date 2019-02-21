@@ -122,6 +122,16 @@ public class CommunityServiceImpl implements CommunityService {
 	}
 
 	@Override
+	public void updateThreadComment(ThreadComment thread) {
+
+		ThreadComment t = threadCommentRepository.findOne(thread.getCommentId());
+		if (t == null) {
+			throw new BizValidateException("帖子不存在。");
+		}
+		threadCommentRepository.save(thread);
+	}
+	
+	@Override
 	public ThreadComment addComment(User user, ThreadComment comment) {
 	
 		comment.setCommentDateTime(System.currentTimeMillis());
@@ -258,7 +268,11 @@ public class CommunityServiceImpl implements CommunityService {
 		}
 	}
 	
-	
+	@Override
+	public ThreadComment getThreadCommentByTreadId(long threadCommentId) {
+		// TODO Auto-generated method stub
+		return threadCommentRepository.findOne(threadCommentId);
+	}
 	
 	
 }
