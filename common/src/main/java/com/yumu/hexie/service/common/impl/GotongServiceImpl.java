@@ -27,6 +27,8 @@ import com.yumu.hexie.integration.wechat.entity.customer.NewsMessage;
 import com.yumu.hexie.integration.wechat.entity.customer.Template;
 import com.yumu.hexie.integration.wechat.service.CustomService;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
+import com.yumu.hexie.model.community.RegionInfo;
+import com.yumu.hexie.model.community.RegionInfoRepository;
 import com.yumu.hexie.model.community.Staffing;
 import com.yumu.hexie.model.community.StaffingRepository;
 import com.yumu.hexie.model.localservice.ServiceOperator;
@@ -92,6 +94,8 @@ public class GotongServiceImpl implements GotongService {
     private SystemConfigService systemConfigService;
     @Inject
     private  StaffingRepository staffingRepository;
+    @Inject
+    private  RegionInfoRepository regionInfoRepository;
     
     @Async
     @Override
@@ -184,10 +188,13 @@ public class GotongServiceImpl implements GotongService {
 	@Override
 	public void sendThreadPubNotify(User user, com.yumu.hexie.model.community.Thread thread) {
     	String sect_id = user.getSect_id();
-    	List<Staffing> list = staffingRepository.getStaffing(sect_id);
-    	for (int i = 0; i < list.size(); i++) {
-    		User useropenId = userService.getById(Long.parseLong(list.get(i).getStaffing_userid()));
-    		pushweixin(useropenId.getOpenid(),TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()),TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getCell_addr(), "请点击查看具体信息");
+    	List<RegionInfo> listregioninfo = regionInfoRepository.findAllByRegionType(sect_id);
+    	for (int k = 0; k < listregioninfo.size(); k++) {
+        	List<Staffing> list = staffingRepository.getStaffing(Long.toString(listregioninfo.get(k).getId()));
+        	for (int i = 0; i < list.size(); i++) {
+        		User useropenId = userService.getById(Long.parseLong(list.get(i).getStaffing_userid()));
+        		pushweixin(useropenId.getOpenid(),TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()),TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getCell_addr(), "请点击查看具体信息");
+    		}
 		}
     }
     
