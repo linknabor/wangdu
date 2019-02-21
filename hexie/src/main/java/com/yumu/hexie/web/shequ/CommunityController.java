@@ -166,7 +166,9 @@ public class CommunityController extends BaseController{
 		
 		User user = (User)session.getAttribute(Constants.USER);
 		
-		log.error("user_sect_id:"+user.getSect_id());
+		if(!user.getSect_id().isEmpty()) {
+			log.error("user_sect_id:"+user.getSect_id());
+		}
 		
 		user = userService.getById(user.getId());
 		
