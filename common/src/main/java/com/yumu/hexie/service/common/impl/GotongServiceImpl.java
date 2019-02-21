@@ -193,7 +193,7 @@ public class GotongServiceImpl implements GotongService {
         	List<Staffing> list = staffingRepository.getStaffing(Long.toString(listregioninfo.get(k).getId()));
         	for (int i = 0; i < list.size(); i++) {
         		User useropenId = userService.getById(Long.parseLong(list.get(i).getStaffing_userid()));
-        		pushweixin(useropenId.getOpenid(),TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()),TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getCell_addr(), "请点击查看具体信息");
+        		pushweixin(useropenId.getOpenid(),TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()),TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
     		}
 		}
     }
@@ -204,7 +204,9 @@ public class GotongServiceImpl implements GotongService {
     
 	@Override
     public void pushweixin(String openId,String threadid,String template,String firstval,String keyword1val,String keyword2val,String keyword3val,String keyword4val,String remarkval) {
-    	Template msg = new Template();
+		LOG.error("openId:"+openId+"   threadid:"+threadid+"   template:"+template+"   firstval:"+firstval+"   keyword1val:"+keyword1val+"   keyword2val:"+keyword2val+"   keyword3val:"+keyword3val+"   keyword4val:"+keyword4val+"   remarkval:"+remarkval);
+		
+		Template msg = new Template();
     	msg.setTouser(openId);//openID  wywOpenId:og0nw09cdaJZjwQlg8ICnsSCclTE 测试推送使用     测试机备份openid o08kOwJu6eA1Vr3cbV-Miqpm_EMA  内脏坏了
     	msg.setUrl(threadid);//跳转地址
     	msg.setTemplate_id(template);//模板id
@@ -241,8 +243,8 @@ public class GotongServiceImpl implements GotongService {
 		data.setRemark(remark);
 		
 		msg.setData(data);
-//		String accessToken = systemConfigService.queryWXAToken();
-		String accessToken = "18_OMUjOTiLieCH7qbjBnGCvnMIA-Tm_8jeVH_1KNeYPZibssougXAsTsDEU1G_xCqrSyUZ2Lfo46YxqRCFvXo_rBq_V7-6Qp1DUstm2LKM5N4BS4QCAZ5VcBV1X5W3q48cledTIwcIaU3RSvSsWPPbABACVV";
+		String accessToken = systemConfigService.queryWXAToken();
+//		String accessToken = "18_OMUjOTiLieCH7qbjBnGCvnMIA-Tm_8jeVH_1KNeYPZibssougXAsTsDEU1G_xCqrSyUZ2Lfo46YxqRCFvXo_rBq_V7-6Qp1DUstm2LKM5N4BS4QCAZ5VcBV1X5W3q48cledTIwcIaU3RSvSsWPPbABACVV";
 		CustomService.sendCustomerMessage(msg, accessToken);
     }
     
