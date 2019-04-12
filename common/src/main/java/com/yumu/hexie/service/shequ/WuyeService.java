@@ -52,4 +52,8 @@ public interface WuyeService {
 	
 	//14.根据数据类型查询指定的物业单元信息
 	public CellListVO querySectList(String sect_id, String build_id, String unit_id, String data_type);
+	
+	//修正已绑定房屋用户房屋不正确的问题
+	public <T> void fixUserBindedHouses(String userId);
+	
 }
