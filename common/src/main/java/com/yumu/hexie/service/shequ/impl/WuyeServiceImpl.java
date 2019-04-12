@@ -1,19 +1,21 @@
 package com.yumu.hexie.service.shequ.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.inject.Inject;
-import javax.xml.bind.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.yumu.hexie.common.util.TransactionUtil;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
@@ -23,18 +25,18 @@ import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
-import com.yumu.hexie.integration.wuye.vo.PaymentData;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
+import com.yumu.hexie.model.market.OrderItem;
+import com.yumu.hexie.model.market.ServiceOrder;
 import com.yumu.hexie.model.community.RegionInfo;
-import com.yumu.hexie.model.community.RegionInfoRepository;
-import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.community.RegionInfoRepository;import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.model.user.UserRepository;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.WuyeService;
 
 @Service("wuyeService")
-public class WuyeServiceImpl implements WuyeService {
+public class WuyeServiceImpl<T> implements WuyeService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WuyeServiceImpl.class);
 
@@ -42,6 +44,8 @@ public class WuyeServiceImpl implements WuyeService {
 	private UserRepository userRepository;
 	@Inject
 	private RegionInfoRepository regionInfoRepository;
+	@Inject
+	private TransactionUtil<T> transactionUtil;
 	
 	@Override
 	public HouseListVO queryHouse(String userId) {
@@ -70,14 +74,11 @@ public class WuyeServiceImpl implements WuyeService {
 			user.setSect_id(house.getSect_id());
 			user.setSect_name(house.getSect_name());
 			user.setCell_id(house.getMng_cell_id());
-			user.setCell_addr(house.getCell_addr());
+			user.setCell_addr(house.getCell_addr());	//set到session
 			
-			userRepository.save(currUser);
 		}else {
 			currUser.setTotal_bind((currUser.getTotal_bind()+1));
-			userRepository.save(currUser);
 		}
-		
 		
 		BaseResult<HexieUser> r= WuyeUtil.bindHouse(currUser.getWuyeId(), stmtId, house.getMng_cell_id());
 		if ("04".equals(r.getResult())){
@@ -89,6 +90,13 @@ public class WuyeServiceImpl implements WuyeService {
 		if ("01".equals(r.getResult())) {
 			throw new BizValidateException("账户不存在");
 		}
+		
+		if (r.isSuccess()) {
+			//添加电话到user表
+			currUser.setOfficeTel(r.getData().getOffice_tel());	//保存到数据库
+			user.setOfficeTel(r.getData().getOffice_tel());	//set到session
+		}
+		userRepository.save(currUser);
 		
 		return r.getData();
 	}
@@ -106,24 +114,29 @@ public class WuyeServiceImpl implements WuyeService {
 			currUser.setCell_addr("");
 			currUser.setTotal_bind(curr_bind);
 			
-			user.setSect_id("0");
+			user.setSect_id("0");	//set到session
 			user.setSect_name("");
 			user.setCell_id("");
 			user.setCell_addr("");
 			user.setTotal_bind(curr_bind);
 			
-			userRepository.save(currUser);
 		}else {
 			currUser.setTotal_bind(curr_bind);
-			userRepository.save(currUser);
+			
 		}
 		
 		BaseResult<String> r = WuyeUtil.deleteHouse(userId, houseId);
 		boolean isSuccess = r.isSuccess();
 		
-		if (!isSuccess) {
+		if (isSuccess) {
+			//添加电话到user表
+			currUser.setOfficeTel(r.getData());
+			user.setOfficeTel(r.getData());	//set到session
+		}else {
 			throw new BizValidateException("删除房屋失败。");
 		}
+		
+		userRepository.save(currUser);	//保存的数据库
 		return r;
 	}
 
@@ -235,6 +248,79 @@ public class WuyeServiceImpl implements WuyeService {
 	public CellListVO querySectList(String sect_id, String build_id,
 			String unit_id, String data_type) {
 		return WuyeUtil.getMngList(sect_id, build_id, unit_id, data_type).getData();
+	}
+
+	@Override
+	public void fixUserBindedHouses(String guangmingsign) {
+
+		if ("guangmingsign".equals(guangmingsign)) {
+			
+			long count = userRepository.count();
+			Long loops = count/1000;
+			if (count%1000!=0) {
+				loops++;
+			}
+			//每页1000条循环user表
+			for (int i = 0; i < loops.intValue(); i++) {
+				
+				Pageable pageable = new PageRequest(i*1000, 1000);
+				Page<User> userList = userRepository.findAll(pageable);
+				for (User user : userList) {
+					BaseResult<HouseListVO> hio = WuyeUtil.queryHouse(String.valueOf(user.getWuyeId()));
+					transactionUtil.transact(s->fixBindedHouse(user, hio.getData()));
+				}
+			}
+			
+		}
+		
+	}
+	
+	public static void main(String[] args) {
+		
+		
+		Function<Integer, Integer> name = e -> e * 2;
+        Function<Integer, Integer> square = e -> e * e;
+        
+        int value = name.andThen(square).apply(3);
+        System.out.println("andThen value=" + value);
+        int value2 = name.compose(square).apply(3);
+        System.out.println("compose value2=" + value2);
+        //返回一个执行了apply()方法之后只会返回输入参数的函数对象
+        Object identity = Function.identity().apply("huohuo");
+        System.out.println(identity);
+
+        ServiceOrder serviceOrder = new ServiceOrder();
+        Consumer<ServiceOrder> orderConsumer = serviceOrderC -> serviceOrderC.setPrice(100f);
+        orderConsumer.accept(serviceOrder);
+        System.out.println("price:"+serviceOrder.getPrice());
+        
+        
+	}
+	
+	/**
+	 * 修正已绑房屋用户正确的绑定房屋数和小区、房屋地址
+	 * @param user
+	 * @param vo
+	 */
+	public void fixBindedHouse(User user, HouseListVO vo) {
+		
+		List<HexieHouse> houList = vo.getHou_info();
+		if (houList!=null && houList.size()>0) {
+			user.setTotal_bind(houList.size());
+			user.setSect_id(houList.get(0).getSect_id());
+			user.setSect_name(houList.get(0).getSect_name());
+			user.setCell_id(houList.get(0).getMng_cell_id());
+			user.setCell_addr(houList.get(0).getCell_addr());
+		}else {
+			user.setTotal_bind(0);
+			user.setSect_id("");
+			user.setSect_name("");
+			user.setCell_id("");
+			user.setCell_addr("");
+		}
+		userRepository.save(user);
+		
+		
 	}
 	
 	

@@ -23,9 +23,9 @@ public class User extends BaseModel{
 	
 	
 	/** 来自默认地址，用于服务支持 */
-	private long provinceId;
-	private long cityId;
-	private long countyId;
+	private long provinceId;//省
+	private long cityId;//市
+	private long countyId;//县
 	private long xiaoquId;//对应region表
 	private String county;
 
