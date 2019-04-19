@@ -263,7 +263,7 @@ public class WuyeServiceImpl<T> implements WuyeService {
 			//每页1000条循环user表
 			for (int i = 0; i < loops.intValue(); i++) {
 				
-				Pageable pageable = new PageRequest(i*1000, 1000);
+				Pageable pageable = new PageRequest(i, 1000);
 				Page<User> userList = userRepository.findAll(pageable);
 				for (User user : userList) {
 					BaseResult<HouseListVO> hio = WuyeUtil.queryHouse(String.valueOf(user.getWuyeId()));
