@@ -51,6 +51,7 @@ public class UserInfo implements Serializable {
     private int zhima;
     private int lvdou;
     private Integer couponCount;
+	private String openid;
     
     private String shareCode;
     
@@ -253,6 +254,12 @@ public class UserInfo implements Serializable {
 	}
 	public void setSect_id(String sect_id) {
 		this.sect_id = sect_id;
+	}
+	public String getOpenid() {
+		return openid;
+	}
+	public void setOpenid(String openid) {
+		this.openid = openid;
 	}
     
     
