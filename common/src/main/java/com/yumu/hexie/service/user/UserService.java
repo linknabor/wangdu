@@ -20,6 +20,6 @@ public interface UserService {
 	public User saveProfile(long userId,String nickName,int sex);
     public User save(User user);
     public User bindPhone(User user,String phone);
-	
+    public User bindWithWuye(User userAccount);
 	public User queryByShareCode(String code);
 }
