@@ -77,12 +77,6 @@ public class UserController extends BaseController{
     public BaseResult<UserInfo> userInfo(HttpSession session,@ModelAttribute(Constants.USER)User user) throws Exception {
 		user = userService.getById(user.getId());
         if(user != null){
-   		 	//绑定物业信息
-            if(StringUtil.isEmpty(user.getWuyeId()) ){
-            	HexieUser r = WuyeUtil.userLogin(user.getOpenid()).getData();
-        		user.setWuyeId(r.getUser_id());
-        		user = userService.save(user);
-            }
         	session.setAttribute(Constants.USER, user);
             return new BaseResult<UserInfo>().success(new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId())));
         } else {
