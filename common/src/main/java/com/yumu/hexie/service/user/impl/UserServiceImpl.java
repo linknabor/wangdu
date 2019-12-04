@@ -4,6 +4,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.yumu.hexie.common.util.StringUtil;
@@ -21,6 +24,8 @@ import com.yumu.hexie.service.user.UserService;
 
 @Service("userService")
 public class UserServiceImpl implements UserService {
+	
+	private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	@Inject
 	private UserRepository userRepository;
@@ -99,13 +104,23 @@ public class UserServiceImpl implements UserService {
         userAccount.setSubscribe(user.getSubscribe());
         return userRepository.save(userAccount);
     }
-	
-	private void bindWithWuye(User userAccount) {
-		BaseResult<HexieUser> r = WuyeUtil.userLogin(userAccount.getOpenid());
-		if(r.isSuccess()) {
-			userAccount.setWuyeId(r.getData().getUser_id());
-			userRepository.save(userAccount);
+    
+    @Override
+    @Async
+	public User bindWithWuye(User userAccount) {
+		 //绑定物业信息
+    	try {
+    		if(StringUtil.isEmpty(userAccount.getWuyeId()) ){
+    			BaseResult<HexieUser> r = WuyeUtil.userLogin(userAccount.getOpenid());
+    			if(r.isSuccess()) {
+    				userAccount.setWuyeId(r.getData().getUser_id());
+    				userAccount = userRepository.save(userAccount);
+    			}
+    		}
+		} catch (Exception e) {
+			logger.error(e.getMessage(),e);
 		}
+    	return userAccount;
 	}
 
 	@Override
