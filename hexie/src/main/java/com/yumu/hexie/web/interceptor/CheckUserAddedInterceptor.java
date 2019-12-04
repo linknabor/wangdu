@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -33,6 +34,13 @@ public class CheckUserAddedInterceptor implements HandlerInterceptor {
 					User userAccount = userService.getOrSubscibeUserByCode(code);
 					request.getSession().setAttribute(Constants.USER, userAccount);
 				}
+			}
+		}else{
+			User userAccount = (User) request.getSession().getAttribute(Constants.USER);
+			userService.bindWithWuye(userAccount);
+			if(StringUtils.isEmpty(userAccount.getWuyeId())) {
+				userAccount = userService.getById(userAccount.getId());
+				request.getSession().setAttribute(Constants.USER, userAccount);
 			}
 		}
 		return true;
