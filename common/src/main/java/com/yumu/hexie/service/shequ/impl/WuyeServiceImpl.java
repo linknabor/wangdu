@@ -61,24 +61,7 @@ public class WuyeServiceImpl<T> implements WuyeService {
 		
 		User currUser = userRepository.findOne(user.getId());
 		
-		logger.error("total_bind :" + currUser.getTotal_bind());
-		
-		if (currUser.getTotal_bind() <= 0) {//从未绑定过的做新增
-			currUser.setTotal_bind(1);
-			currUser.setSect_id(house.getSect_id());
-			currUser.setSect_name(house.getSect_name());
-			currUser.setCell_id(house.getMng_cell_id());
-			currUser.setCell_addr(house.getCell_addr());
-			
-			user.setTotal_bind(1);
-			user.setSect_id(house.getSect_id());
-			user.setSect_name(house.getSect_name());
-			user.setCell_id(house.getMng_cell_id());
-			user.setCell_addr(house.getCell_addr());	//set到session
-			
-		}else {
-			currUser.setTotal_bind((currUser.getTotal_bind()+1));
-		}
+
 		
 		BaseResult<HexieUser> r= WuyeUtil.bindHouse(currUser.getWuyeId(), stmtId, house.getMng_cell_id());
 		if ("04".equals(r.getResult())){
@@ -96,10 +79,35 @@ public class WuyeServiceImpl<T> implements WuyeService {
 			currUser.setOfficeTel(r.getData().getOffice_tel());	//保存到数据库
 			user.setOfficeTel(r.getData().getOffice_tel());	//set到session
 		}
+		
+		logger.error("total_bind1111 :" + currUser.getTotal_bind());
+		
+		if (currUser.getTotal_bind() <= 0) {//从未绑定过的做新增
+			currUser.setTotal_bind(1);
+			currUser.setSect_id(house.getSect_id());
+			currUser.setSect_name(house.getSect_name());
+			currUser.setCell_id(house.getMng_cell_id());
+			currUser.setCell_addr(house.getCell_addr());
+			
+			user.setTotal_bind(1);
+			user.setSect_id(house.getSect_id());
+			user.setSect_name(house.getSect_name());
+			user.setCell_id(house.getMng_cell_id());
+			user.setCell_addr(house.getCell_addr());	//set到session
+			
+		}else {
+			long bind = currUser.getTotal_bind()+1;
+			user.setTotal_bind(bind);
+			currUser.setTotal_bind(bind);
+		}
+		
+		logger.error("total_bind2222 :" + currUser.getTotal_bind());
+		
 		userRepository.save(currUser);
 		
 		return r.getData();
 	}
+
 
 	@Override
 	@Transactional(propagation=Propagation.REQUIRED)
