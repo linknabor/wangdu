@@ -288,9 +288,9 @@ public class CommunityServiceImpl implements CommunityService {
 	}
 
 	@Override
-	public void solveThread(String threadId) {
+	public void solveThread(long threadId) {
 		// TODO Auto-generated method stub
-		Thread thread = threadRepository.findOne(Long.valueOf(threadId));
+		Thread thread = threadRepository.findOne(threadId);
 		thread.setSolve("1");
 		threadRepository.save(thread);
 	}

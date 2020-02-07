@@ -205,5 +205,5 @@ public interface CommunityService {
 	 */
 	public ThreadComment getThreadCommentByTreadId(long threadCommentId);
 	
-	public void solveThread(String threadId);
+	public void solveThread(long threadId);
 }
