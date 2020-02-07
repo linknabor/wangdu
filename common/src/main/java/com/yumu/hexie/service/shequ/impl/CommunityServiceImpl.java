@@ -26,6 +26,7 @@ import com.yumu.hexie.model.community.ThreadOperatorRepository;
 import com.yumu.hexie.model.community.ThreadRepository;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.common.GotongService;
+import com.yumu.hexie.service.common.impl.GotongServiceImpl;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
 
@@ -84,6 +85,7 @@ public class CommunityServiceImpl implements CommunityService {
 		thread.setUserSectId(user.getXiaoquId());
 		thread.setUserSectName(user.getXiaoquName());
 		thread.setStickPriority("0");	//默认优先级0，为最低
+		thread.setWhether("0");//未回复 默认
 		threadRepository.save(thread);
 		
 		gotongService.sendThreadPubNotify(user, thread);
@@ -140,6 +142,17 @@ public class CommunityServiceImpl implements CommunityService {
 		comment.setCommentUserHead(user.getHeadimgurl());
 		comment.setCommentUserId(user.getId());
 		comment.setCommentUserName(user.getNickname());
+		
+		long threadId = comment.getThreadId();
+		Thread thread = threadRepository.findOne(threadId);
+		
+		if(thread.getUserId()==user.getId()) {
+			thread.setWhether("0");//未回复
+		}else {
+			thread.setWhether("1");//已回复
+			gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()), GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
+		}
+		threadRepository.save(thread);
 		
 		threadCommentRepository.save(comment);
 		return comment;
@@ -272,6 +285,14 @@ public class CommunityServiceImpl implements CommunityService {
 	public ThreadComment getThreadCommentByTreadId(long threadCommentId) {
 		// TODO Auto-generated method stub
 		return threadCommentRepository.findOne(threadCommentId);
+	}
+
+	@Override
+	public void solveThread(String threadId) {
+		// TODO Auto-generated method stub
+		Thread thread = threadRepository.findOne(Long.valueOf(threadId));
+		thread.setSolve("1");
+		threadRepository.save(thread);
 	}
 	
 	

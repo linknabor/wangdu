@@ -204,4 +204,6 @@ public interface CommunityService {
 	 * @return
 	 */
 	public ThreadComment getThreadCommentByTreadId(long threadCommentId);
+	
+	public void solveThread(String threadId);
 }
