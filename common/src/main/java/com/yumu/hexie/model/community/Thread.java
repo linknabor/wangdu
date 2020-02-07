@@ -48,6 +48,8 @@ public class Thread implements Serializable{
 	private String stickPriority;	//置顶优先级，数值越大优先级越高
 	private long lastCommentTime;	//最后评论时间
 	private String hasUnreadComment;	//是否有未读评论
+	private String whether;//是否回复 0：未回复   1：已回复
+	private String solve;//是否解决  0：未解决  1：已解决
 	
 	@Transient
 	private List<ThreadComment> comments;
@@ -269,7 +271,12 @@ public class Thread implements Serializable{
 	public void setHasUnreadComment(String hasUnreadComment) {
 		this.hasUnreadComment = hasUnreadComment;
 	}
-	
+	public String getWhether() {
+		return whether;
+	}
+	public void setWhether(String whether) {
+		this.whether = whether;
+	}
 	public static void main(String[] args) {
 		
 		
@@ -282,6 +289,12 @@ public class Thread implements Serializable{
 		}
 		String str = DateUtil.getSendTime(time);
 		System.out.println(str.toString());
+	}
+	public String getSolve() {
+		return solve;
+	}
+	public void setSolve(String solve) {
+		this.solve = solve;
 	}
 	
 	

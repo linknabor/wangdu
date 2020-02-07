@@ -42,7 +42,9 @@ import com.yumu.hexie.model.community.CommunityInfo;
 import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.common.SystemConfigService;
+import com.yumu.hexie.service.common.impl.GotongServiceImpl;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
 import com.yumu.hexie.service.user.UserService;
@@ -71,6 +73,9 @@ public class CommunityController extends BaseController{
 	
 	@Inject
 	private SystemConfigService systemConfigService;
+	
+	@Inject 
+	private GotongService gotongService;
 	
 	/*****************[BEGIN]帖子********************/
 	
@@ -1007,5 +1012,35 @@ public class CommunityController extends BaseController{
 		
 		return BaseResult.successResult("succeeded");
 		
+	}
+	
+	
+	/**
+	 * 推送模板消息
+	 * @param session
+	 * @param threadId
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/thread/pushweixin", method = RequestMethod.POST)
+	@ResponseBody
+	public String pushweixin(@RequestBody String threadId,@RequestBody long userId) throws Exception{
+		User user = userService.getById(userId);
+		gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+threadId, GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", threadId, user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
+		return "SUCCESS";
+	}
+	
+	/**
+	 * 确定结束帖子
+	 * @param session
+	 * @param threadId
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/thread/solveThread", method = RequestMethod.POST)
+	@ResponseBody
+	public String solveThread(@ModelAttribute(Constants.USER)User user,@RequestBody String threadId) throws Exception{
+		communityService.solveThread(threadId);
+		return "SUCCESS";
 	}
 }
