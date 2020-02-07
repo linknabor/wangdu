@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.qiniu.api.io.IoApi;
@@ -1024,7 +1025,7 @@ public class CommunityController extends BaseController{
 	 */
 	@RequestMapping(value = "/thread/pushweixin", method = RequestMethod.POST)
 	@ResponseBody
-	public String pushweixin(@RequestBody String threadId,@RequestBody long userId) throws Exception{
+	public String pushweixin(@RequestParam(required=false) String threadId,@RequestParam(required=false) long userId) throws Exception{
 		User user = userService.getById(userId);
 		gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+threadId, GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", threadId, user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
 		return "SUCCESS";
@@ -1039,7 +1040,7 @@ public class CommunityController extends BaseController{
 	 */
 	@RequestMapping(value = "/thread/solveThread", method = RequestMethod.POST)
 	@ResponseBody
-	public String solveThread(@ModelAttribute(Constants.USER)User user,@RequestBody String threadId) throws Exception{
+	public String solveThread(@ModelAttribute(Constants.USER)User user,@RequestParam(required=false) long threadId) throws Exception{
 		communityService.solveThread(threadId);
 		return "SUCCESS";
 	}
