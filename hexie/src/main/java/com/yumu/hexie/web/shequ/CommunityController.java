@@ -1040,8 +1040,9 @@ public class CommunityController extends BaseController{
 	 */
 	@RequestMapping(value = "/thread/solveThread", method = RequestMethod.POST)
 	@ResponseBody
-	public String solveThread(@ModelAttribute(Constants.USER)User user,@RequestParam(required=false) long threadId) throws Exception{
-		communityService.solveThread(threadId);
+	public String solveThread(@ModelAttribute(Constants.USER)User user,@RequestParam(required=false) String threadId) throws Exception{
+		log.info("solveThread-------ThreadID:"+threadId);
+		communityService.solveThread(Long.valueOf(threadId));
 		return "SUCCESS";
 	}
 }
