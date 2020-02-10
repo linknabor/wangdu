@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.inject.Inject;
+import javax.xml.bind.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,7 +192,13 @@ public class WuyeServiceImpl<T> implements WuyeService {
 	@Override
 	public PaymentInfo getBillDetail(String userId, String stmtId,
 			String anotherbillIds) {
-		return WuyeUtil.getBillDetail(userId, stmtId, anotherbillIds).getData();
+		try {
+			return WuyeUtil.getBillDetail(userId, stmtId, anotherbillIds).getData();
+		} catch (ValidationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
