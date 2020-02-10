@@ -1025,8 +1025,8 @@ public class CommunityController extends BaseController{
 	 */
 	@RequestMapping(value = "/thread/pushweixin", method = RequestMethod.POST)
 	@ResponseBody
-	public String pushweixin(@RequestParam(required=false) String threadId,@RequestParam(required=false) long userId) throws Exception{
-		User user = userService.getById(userId);
+	public String pushweixin(@RequestParam(required=false) String threadId,@RequestParam(required=false) String userId) throws Exception{
+		User user = userService.getById(Long.valueOf(userId));
 		gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+threadId, GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", threadId, user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
 		return "SUCCESS";
 	}
