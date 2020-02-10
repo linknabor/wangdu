@@ -223,7 +223,7 @@ public class WuyeController extends BaseController {
 	@RequestMapping(value = "/getBillDetail", method = RequestMethod.GET)
 	@ResponseBody
 	public BaseResult<PaymentInfo> getBillDetail(@ModelAttribute(Constants.USER)User user,
-			@RequestParam(required=false) String billId,@RequestParam(required=false) String stmtId) {
+			@RequestParam(required=false) String billId,@RequestParam(required=false) String stmtId) throws Exception {
 		return BaseResult.successResult(WuyeUtil.getBillDetail(user.getWuyeId(), stmtId, billId).getData());
 	}
 	
