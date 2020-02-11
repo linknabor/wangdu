@@ -10,7 +10,6 @@ import com.yumu.hexie.model.community.CommunityInfo;
 import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.user.User;
-import com.yumu.hexie.web.BaseResult;
 
 public interface CommunityService {
 	
@@ -206,5 +205,5 @@ public interface CommunityService {
 	 */
 	public ThreadComment getThreadCommentByTreadId(long threadCommentId);
 	
-	public BaseResult<Thread> solveThread(long threadId);
+	public Thread solveThread(long threadId);
 }
