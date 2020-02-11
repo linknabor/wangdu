@@ -4,6 +4,7 @@
  */
 package com.yumu.hexie.service.common.impl;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import com.yumu.hexie.integration.wechat.entity.customer.News;
 import com.yumu.hexie.integration.wechat.entity.customer.NewsMessage;
 import com.yumu.hexie.integration.wechat.entity.customer.Template;
 import com.yumu.hexie.integration.wechat.service.CustomService;
+import com.yumu.hexie.integration.wechat.service.FileService;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.model.community.RegionInfo;
 import com.yumu.hexie.model.community.RegionInfoRepository;
@@ -200,6 +202,48 @@ public class GotongServiceImpl implements GotongService {
     
     public static void main(String[] args) {
     	
+    	InputStream inputStream = FileService.downloadFile("WmGichEzXkPuDpyRdwJLO43ubNKX1_arFC18Hj5p3cLt23plwL_VZb76CwW4ne30", "30_J1ovVpgaF5_HA37VUnIFZiXjwjM5J0jczDK1c7ypZlAhbRr8o6HiM2Yw8svAIRLvBhIIyBysx0ZrsWYxNxLWDAR4AjoV0GixYpj_AduG7qYEznJR2WxSH3R1e_GRwRPw3tT79TMX1cv80l8jJMBgAHAUXM");		//下载图片
+    	System.out.println("123");
+//		Template msg = new Template();
+//    	msg.setTouser("ohZbVwGsGK-Rl4SqsEgyuoIxJtP0");//get systemConfig:ACCESS_TOKEN:
+//    	msg.setUrl("https://test.e-sehqu.com/wangdu/weixin/wuye/index.html?state=123#/threadDetail?threadId=850");//跳转地址
+//    	msg.setTemplate_id("sCEAGYSna4EyTZqw-0hCHsW1QSk60I6MZO3YER_5fZg");//模板id
+//		DataVo data = new DataVo();
+//		
+//		DataJsonVo first = new DataJsonVo();
+//		first.setValue("您好，您有新的消息"); //标题
+//		first.setColor("#173177");
+//		data.setFirst(first);
+//		
+//		DataJsonVo keyword1 = new DataJsonVo();
+//		keyword1.setValue("850");//内容1
+//		keyword1.setColor("#173177"); 
+//		data.setKeyword1(keyword1);
+//		
+//		DataJsonVo keyword2 = new DataJsonVo();
+//		keyword2.setValue("内脏坏了");//内容2
+//		keyword2.setColor("#173177");
+//		data.setKeyword2(keyword2);
+//		
+//		DataJsonVo keyword3 = new DataJsonVo();
+//		keyword3.setValue("18037947781");//内容3
+//		keyword3.setColor("#173177");
+//		data.setKeyword3(keyword3);
+//		
+//		DataJsonVo keyword4 = new DataJsonVo();
+//		keyword4.setValue("汇诚佳苑");//内容4
+//		keyword4.setColor("#173177");
+//		data.setKeyword4(keyword4);
+//		
+//		DataJsonVo remark = new DataJsonVo();
+//		remark.setValue("请点击查看具体信息");//结尾
+//		remark.setColor("#173177");
+//		data.setRemark(remark);
+//		
+//		msg.setData(data);
+//		String accessToken = "30_J1ovVpgaF5_HA37VUnIFZiXjwjM5J0jczDK1c7ypZlAhbRr8o6HiM2Yw8svAIRLvBhIIyBysx0ZrsWYxNxLWDAR4AjoV0GixYpj_AduG7qYEznJR2WxSH3R1e_GRwRPw3tT79TMX1cv80l8jJMBgAHAUXM";
+//		CustomService.sendCustomerMessage(msg, accessToken);
+//    	System.out.println("123");
     }
     
 	@Override
