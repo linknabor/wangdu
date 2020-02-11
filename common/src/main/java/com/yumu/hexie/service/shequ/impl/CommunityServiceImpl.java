@@ -288,11 +288,11 @@ public class CommunityServiceImpl implements CommunityService {
 	}
 
 	@Override
-	public void solveThread(long threadId) {
+	public Thread solveThread(long threadId) {
 		// TODO Auto-generated method stub
 		Thread thread = threadRepository.findOne(threadId);
 		thread.setSolve("1");
-		threadRepository.save(thread);
+		return threadRepository.save(thread);
 	}
 	
 	
