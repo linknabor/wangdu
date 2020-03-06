@@ -35,7 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Modifying
 	@Transactional
 	@Query(value = "update user set total_bind = ?1, sect_id = ?2, "
-			+ " sect_name = ?3, cell_id = ?4, cell_addr = ?5, office_tel = ?6 "
+			+ " sect_name = ?3, cell_id = ?4, cell_addr = ?5, officeTel = ?6 "
 			+ " where id = ?7 ", nativeQuery = true)
 	public int updateUserByHouse(long totalBind, String sectId, String sectName, 
 			String cellId, String cellAddr, String officeTel, long id);
