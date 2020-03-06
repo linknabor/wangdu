@@ -19,6 +19,7 @@ public class HexieUser implements Serializable {
 	private String email_activie;
 	private String user_tel;
 	private String office_tel;//小区电话
+	private Long total_bind;
 	
 	public String getOffice_tel() {
 		return office_tel;
@@ -69,4 +70,11 @@ public class HexieUser implements Serializable {
 	public void setUser_tel(String user_tel) {
 		this.user_tel = user_tel;
 	}
+	public Long getTotal_bind() {
+		return total_bind;
+	}
+	public void setTotal_bind(Long total_bind) {
+		this.total_bind = total_bind;
+	}
+	
 }

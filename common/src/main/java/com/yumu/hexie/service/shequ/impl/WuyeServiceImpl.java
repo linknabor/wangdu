@@ -13,8 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.TransactionUtil;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
@@ -23,15 +23,16 @@ import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
+import com.yumu.hexie.integration.wuye.vo.BindHouseDTO;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
-import com.yumu.hexie.model.market.OrderItem;
-import com.yumu.hexie.model.market.ServiceOrder;
 import com.yumu.hexie.model.community.RegionInfo;
-import com.yumu.hexie.model.community.RegionInfoRepository;import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.community.RegionInfoRepository;
+import com.yumu.hexie.model.market.ServiceOrder;
+import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.model.user.UserRepository;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.WuyeService;
@@ -54,18 +55,15 @@ public class WuyeServiceImpl<T> implements WuyeService {
 	}
 
 	@Override
-	@Transactional(propagation=Propagation.REQUIRED)
-	public HexieUser bindHouse(User user, String stmtId, HexieHouse house) {
+	@Transactional
+	public BindHouseDTO bindHouse(User user, String stmtId, HexieHouse house) {
 		
-		logger.error("userId : " + user.getId());
-		logger.error("hosue is :" + house.toString());
-		
+		logger.info("userId : " + user.getId());
+		logger.info("hosue is :" + house.toString());
 		User currUser = userRepository.findOne(user.getId());
+		BaseResult<HexieUser> r = WuyeUtil.bindHouse(currUser.getWuyeId(), stmtId, house.getMng_cell_id());
 		
-
-		
-		BaseResult<HexieUser> r= WuyeUtil.bindHouse(currUser.getWuyeId(), stmtId, house.getMng_cell_id());
-		if ("04".equals(r.getResult())){
+		if("04".equals(r.getResult())){
 			throw new BizValidateException("当前用户已经认领该房屋!");
 		}
 		if ("05".equals(r.getResult())) {
@@ -78,75 +76,48 @@ public class WuyeServiceImpl<T> implements WuyeService {
 		if (r.isSuccess()) {
 			//添加电话到user表
 			currUser.setOfficeTel(r.getData().getOffice_tel());	//保存到数据库
-			user.setOfficeTel(r.getData().getOffice_tel());	//set到session
-		}
-		
-		logger.error("total_bind1111 :" + currUser.getTotal_bind());
-		
-		if (currUser.getTotal_bind() <= 0) {//从未绑定过的做新增
 			currUser.setTotal_bind(1);
 			currUser.setSect_id(house.getSect_id());
 			currUser.setSect_name(house.getSect_name());
 			currUser.setCell_id(house.getMng_cell_id());
 			currUser.setCell_addr(house.getCell_addr());
-			
-			user.setTotal_bind(1);
-			user.setSect_id(house.getSect_id());
-			user.setSect_name(house.getSect_name());
-			user.setCell_id(house.getMng_cell_id());
-			user.setCell_addr(house.getCell_addr());	//set到session
-			
-		}else {
-			long bind = currUser.getTotal_bind()+1;
-			user.setTotal_bind(bind);
-			currUser.setTotal_bind(bind);
+			userRepository.updateUserByHouse(currUser.getTotal_bind(), currUser.getSect_id(), currUser.getSect_name(),
+					currUser.getCell_id(), currUser.getCell_addr(), currUser.getOfficeTel(), currUser.getId());
 		}
 		
-		logger.error("total_bind2222 :" + currUser.getTotal_bind());
-		
-		userRepository.save(currUser);
-		
-		return r.getData();
+		BindHouseDTO bindHouseDTO = new BindHouseDTO();
+		bindHouseDTO.setUser(currUser);
+		bindHouseDTO.setHexieUser(r.getData());
+		return bindHouseDTO;
 	}
 
 
 	@Override
-	@Transactional(propagation=Propagation.REQUIRED)
-	public BaseResult<String> deleteHouse(User user, String userId, String houseId) {
+	@Transactional
+	public boolean deleteHouse(User user, String userId, String houseId) {
 		
 		User currUser = userRepository.findOne(user.getId());
-		long curr_bind = currUser.getTotal_bind() - 1;
-		if (curr_bind <= 0) {
-			currUser.setSect_id("0");
-			currUser.setSect_name("");
-			currUser.setCell_id("");
-			currUser.setCell_addr("");
-			currUser.setTotal_bind(curr_bind);
+		BaseResult<String> result = WuyeUtil.deleteHouse(currUser.getWuyeId(), houseId);
+		if (result.isSuccess()) {
+			String data = result.getData();
+			int totalBind = 0;
+			if (!StringUtils.isEmpty(data)) {
+				totalBind = Integer.valueOf(data);
+			}
+			if (totalBind < 0) {
+				totalBind = 0;
+			}
+			if (totalBind == 0) {
+				userRepository.updateUserByHouse(0l, "", "", "", "", "", currUser.getId());
+			}else {
+				userRepository.updateUserTotalBind(totalBind, currUser.getId());
+			}
 			
-			user.setSect_id("0");	//set到session
-			user.setSect_name("");
-			user.setCell_id("");
-			user.setCell_addr("");
-			user.setTotal_bind(curr_bind);
-			
-		}else {
-			currUser.setTotal_bind(curr_bind);
-			
+		} else {
+			throw new BizValidateException("解绑房屋失败。");
 		}
 		
-		BaseResult<String> r = WuyeUtil.deleteHouse(userId, houseId);
-		boolean isSuccess = r.isSuccess();
-		
-		if (isSuccess) {
-			//添加电话到user表
-			currUser.setOfficeTel(r.getData());
-			user.setOfficeTel(r.getData());	//set到session
-		}else {
-			throw new BizValidateException("删除房屋失败。");
-		}
-		
-		userRepository.save(currUser);	//保存的数据库
-		return r;
+		return result.isSuccess();
 	}
 
 	@Override
@@ -195,8 +166,7 @@ public class WuyeServiceImpl<T> implements WuyeService {
 		try {
 			return WuyeUtil.getBillDetail(userId, stmtId, anotherbillIds).getData();
 		} catch (ValidationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 		return null;
 	}
@@ -338,6 +308,38 @@ public class WuyeServiceImpl<T> implements WuyeService {
 		
 	}
 	
-	
+//	@Override
+//	@Transactional
+//	public User setDefaultAddress(User user, HexieUser u) {
+//
+//		User currUser = userRepository.findOne(user.getId());
+//		
+//		Long totalBind = currUser.getTotal_bind();
+//		if (totalBind == null) {
+//			totalBind = 0l;
+//		}
+//		if (!StringUtils.isEmpty(u.getTotal_bind())) {
+//			if (u.getTotal_bind() > 0) {
+//				totalBind = u.getTotal_bind();	//如果值不为空，说明是跑批程序返回回来的，直接取值即可，如果值是空，走下面的else累加即可
+//			}
+//		}
+//		if (totalBind == 0) {
+//			totalBind = totalBind + 1;
+//		}
+//		currUser.setTotal_bind(totalBind);
+//		currUser.setXiaoquName(u.getSect_name());
+//		currUser.setProvince(u.getProvince_name());
+//		currUser.setCity(u.getCity_name());
+//		currUser.setCounty(u.getRegion_name());
+//		currUser.setSectId(u.getSect_id());	
+//		currUser.setCspId(u.getCsp_id());
+//		currUser.setOfficeTel(u.getOffice_tel());
+//		userRepository.updateUserByHouse(currUser.getXiaoquId(), currUser.getXiaoquName(), 
+//				currUser.getTotalBind(), currUser.getProvince(), currUser.getCity(), currUser.getCountry(), 
+//				currUser.getSectId(), currUser.getCspId(), currUser.getOfficeTel(), currUser.getId());
+//		
+//		return currUser;
+//		
+//	}
 
 }
