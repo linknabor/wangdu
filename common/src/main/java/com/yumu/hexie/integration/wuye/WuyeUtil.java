@@ -136,8 +136,8 @@ public class WuyeUtil {
 	public static void checkBillRestriction(String anotherbillIds) {
 		
 		String reurl = REQUEST_ADDRESS + String.format(BILL_RESTRICTION, anotherbillIds);
-		BaseResult<String> reBill = (BaseResult<String>)httpGet(reurl,String.class);
-		if("false".equals(reBill.getData())) {
+		BaseResult<Boolean> result = (BaseResult<Boolean>)httpGet(reurl,Boolean.class);
+		if(result.getData()) {
 			throw new BizValidateException("账单数量过多，请减少缴费账单数量");
 		}
 	}
