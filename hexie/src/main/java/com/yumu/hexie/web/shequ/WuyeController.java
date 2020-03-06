@@ -1,6 +1,5 @@
 package com.yumu.hexie.web.shequ;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.MD5Util;
@@ -31,10 +28,11 @@ import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
+import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.CellVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
-import com.yumu.hexie.integration.wuye.resp.CellListVO;
+import com.yumu.hexie.integration.wuye.vo.BindHouseDTO;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -120,18 +118,18 @@ public class WuyeController extends BaseController {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/hexiehouse/delete/{houseId}", method = RequestMethod.GET)
 	@ResponseBody
-	public BaseResult<List<HexieHouse>> deleteHouse(@ModelAttribute(Constants.USER)User user,@PathVariable String houseId)
-			throws Exception {
-		if(StringUtil.isEmpty(user.getWuyeId())){
-			return BaseResult.fail("删除房子失败！请重新访问页面并操作！");
-		}
-		com.yumu.hexie.integration.wuye.resp.BaseResult<String> r = wuyeService.deleteHouse(user, user.getWuyeId(), houseId);
-		if ((boolean)r.isSuccess()) {
-			return BaseResult.successResult("删除房子成功！");
-		} else {
-			return BaseResult.fail("删除房子失败！");
+	public BaseResult<List<HexieHouse>> deleteHouse(HttpSession httpSession,@ModelAttribute(Constants.USER)User user,
+			@PathVariable String houseId) throws Exception {
+		
+		boolean isSuccess = wuyeService.deleteHouse(user, user.getWuyeId(), houseId);
+		if (isSuccess) {
+			httpSession.setAttribute(Constants.USER, user);
+			return BaseResult.successResult("解绑房子成功！");
+		}else {
+			return BaseResult.fail("解绑房子失败！");
 		}
 	}
 	
@@ -150,14 +148,19 @@ public class WuyeController extends BaseController {
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/addhexiehouse", method = RequestMethod.POST)
 	@ResponseBody
-	public BaseResult<HexieHouse> addhouses(@ModelAttribute(Constants.USER)User user,
+	public BaseResult<HexieHouse> addhouses(HttpSession httpSession, @ModelAttribute(Constants.USER)User user,
 			@RequestParam(required=false) String stmtId, @RequestParam(required=false) String houseId, @RequestBody HexieHouse house) throws Exception {
-		HexieUser u = wuyeService.bindHouse(user, stmtId, house);
-		if(u != null) {
-			pointService.addZhima(user, 1000, "zhima-house-"+user.getId()+"-"+houseId);
-		}
 		
+		BindHouseDTO dto = wuyeService.bindHouse(user, stmtId, house);
+		HexieUser u = dto.getHexieUser();
+		User currUser = dto.getUser();
+		log.info("HexieUser u = " + u);
+		if (u != null) {
+			pointService.addZhima(user, 1000, "zhima-house-"+user.getId()+"-"+houseId);
+			httpSession.setAttribute(Constants.USER, currUser);
+		}
 		return BaseResult.successResult(u);
+		
 	}
 	/*****************[END]房产********************/
 

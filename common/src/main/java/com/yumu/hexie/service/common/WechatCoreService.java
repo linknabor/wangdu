@@ -2,8 +2,6 @@ package com.yumu.hexie.service.common;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.yumu.hexie.integration.wechat.entity.common.CloseOrderResp;
 import com.yumu.hexie.integration.wechat.entity.common.JsSign;
 import com.yumu.hexie.integration.wechat.entity.common.PaymentOrderResult;
