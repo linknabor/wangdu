@@ -166,8 +166,7 @@ public class WuyeServiceImpl<T> implements WuyeService {
 		try {
 			return WuyeUtil.getBillDetail(userId, stmtId, anotherbillIds).getData();
 		} catch (ValidationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 		return null;
 	}

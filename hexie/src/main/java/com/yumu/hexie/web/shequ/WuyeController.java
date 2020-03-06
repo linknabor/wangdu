@@ -223,6 +223,20 @@ public class WuyeController extends BaseController {
 	
 
 	/*****************[BEGIN]缴费********************/
+	
+	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/checkBillRestriction", method = RequestMethod.GET)
+	@ResponseBody
+	public BaseResult<PaymentInfo> checkBillRestriction(@ModelAttribute(Constants.USER)User user,
+			@RequestParam(required=false) String billId) throws Exception {
+		
+		WuyeUtil.checkBillRestriction(billId);
+		return BaseResult.successResult("succeeded");
+	}
+	
+	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/getBillDetail", method = RequestMethod.GET)
 	@ResponseBody
 	public BaseResult<PaymentInfo> getBillDetail(@ModelAttribute(Constants.USER)User user,

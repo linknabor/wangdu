@@ -25,6 +25,7 @@ import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
+import com.yumu.hexie.service.exception.BizValidateException;
 
 public class WuyeUtil {
 
@@ -127,16 +128,27 @@ public class WuyeUtil {
 		String url = REQUEST_ADDRESS + String.format(BILL_LIST_URL, userId,payStatus,startDate,endDate,currentPage,totalCount, house_id);
 		return (BaseResult<BillListVO>)httpGet(url,BillListVO.class);
 	}
-	// 9.账单详情 anotherbillIds(逗号分隔) 汇总了去支付,来自BillInfo的bill_id
-	public static BaseResult<PaymentInfo> getBillDetail(String userId,String stmtId,String anotherbillIds) throws ValidationException{
-		String url = REQUEST_ADDRESS + String.format(BILL_DETAIL_URL, userId,stmtId,anotherbillIds);
+	
+	/**
+	 * 校验账单数量是否超过限制
+	 */
+	@SuppressWarnings("unchecked")
+	public static void checkBillRestriction(String anotherbillIds) {
+		
 		String reurl = REQUEST_ADDRESS + String.format(BILL_RESTRICTION, anotherbillIds);
 		BaseResult<String> reBill = (BaseResult<String>)httpGet(reurl,String.class);
-		if(reBill.getData().equals("false")) {
-			throw new ValidationException("账单数量过多，请减少缴费账单数量");
+		if("false".equals(reBill.getData())) {
+			throw new BizValidateException("账单数量过多，请减少缴费账单数量");
 		}
+	}
+	
+	// 9.账单详情 anotherbillIds(逗号分隔) 汇总了去支付,来自BillInfo的bill_id
+	@SuppressWarnings("unchecked")
+	public static BaseResult<PaymentInfo> getBillDetail(String userId,String stmtId,String anotherbillIds) throws ValidationException{
+		String url = REQUEST_ADDRESS + String.format(BILL_DETAIL_URL, userId,stmtId,anotherbillIds);
 		return (BaseResult<PaymentInfo>)httpGet(url,PaymentInfo.class);
 	}
+	
 	// 10.缴费
 	public static BaseResult<WechatPayInfo> getPrePayInfo(String userId,String billId,String stmtId,String openId,
 		String couponUnit, String couponNum, String couponId,String mianBill,String mianAmt, String reduceAmt,
