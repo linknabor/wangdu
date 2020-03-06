@@ -68,7 +68,7 @@ public class WuyeUtil {
 	private static final String SECT_LIST_URL = "querySectByCspIdSDO.do?csp_id=%s";
 	private static final String MNG_LIST_URL = "queryMngByIdSDO.do?sect_id=%s&build_id=%s&unit_id=%s&data_type=%s";
 	private static final String PAY_WATER_URL = "getMngCellByTradeIdSDO.do?user_id=%s&trade_water_id=%s"; // 获取支付记录涉及的房屋
-	private static final String BILL_RESTRICTION = "billRestriction.do?bill_id=%s"; // 获取账单限制是否通过
+	private static final String BILL_RESTRICTION = "billRestrictionSDO.do?bill_id=%s"; // 获取账单限制是否通过
 	
 	public static BaseResult<BillListVO> quickPayInfo(String stmtId, String currPage, String totalCount) {
 		String url = REQUEST_ADDRESS + String.format(QUICK_PAY_URL, stmtId, currPage, totalCount);
