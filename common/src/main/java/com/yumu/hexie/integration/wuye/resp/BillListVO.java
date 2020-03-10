@@ -20,6 +20,7 @@ public class BillListVO implements Serializable {
 	private String pay_least_month;
 	private String reduce_mode;	//减免模式，记账时总金额四舍五入，0表示没有此功能，1表示四舍五入至元，2表示四舍五入至角，3表示自由调价
 	private String bill_restriction_times;
+	private String limit_date;
 	private int bills_size;
 
 	public int getPark_discount_rule_conf() {
@@ -95,6 +96,11 @@ public class BillListVO implements Serializable {
 	public void setBill_restriction_times(String bill_restriction_times) {
 		this.bill_restriction_times = bill_restriction_times;
 	}
-	
+	public String getLimit_date() {
+		return limit_date;
+	}
+	public void setLimit_date(String limit_date) {
+		this.limit_date = limit_date;
+	}
 	
 }
