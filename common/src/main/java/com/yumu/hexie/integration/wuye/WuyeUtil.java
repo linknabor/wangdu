@@ -25,7 +25,6 @@ import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
 import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
-import com.yumu.hexie.service.exception.BizValidateException;
 
 public class WuyeUtil {
 
@@ -130,16 +129,12 @@ public class WuyeUtil {
 	}
 	
 	/**
-	 * 校验账单数量是否超过限制
+	 * 校验账单数量是否是参数的整数倍
 	 */
-	@SuppressWarnings("unchecked")
 	public static void checkBillRestriction(String anotherbillIds) {
 		
 		String reurl = REQUEST_ADDRESS + String.format(BILL_RESTRICTION, anotherbillIds);
-		BaseResult<Boolean> result = (BaseResult<Boolean>)httpGet(reurl,Boolean.class);
-		if(result.getData()) {
-			throw new BizValidateException("账单数量过多，请减少缴费账单数量");
-		}
+		httpGet(reurl,String.class);
 	}
 	
 	// 9.账单详情 anotherbillIds(逗号分隔) 汇总了去支付,来自BillInfo的bill_id

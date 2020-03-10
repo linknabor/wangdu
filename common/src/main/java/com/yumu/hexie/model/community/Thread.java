@@ -277,19 +277,6 @@ public class Thread implements Serializable{
 	public void setWhether(String whether) {
 		this.whether = whether;
 	}
-	public static void main(String[] args) {
-		
-		
-		long time = System.currentTimeMillis();
-		try {
-			java.lang.Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String str = DateUtil.getSendTime(time);
-		System.out.println(str.toString());
-	}
 	public String getSolve() {
 		return solve;
 	}
