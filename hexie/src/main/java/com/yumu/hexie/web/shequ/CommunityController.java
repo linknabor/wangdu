@@ -921,14 +921,7 @@ public class CommunityController extends BaseController{
 			
 			return BaseResult.fail("您还没有填写小区信息。");
 		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.fail("您还没有填写小区信息。");
-		}
-		
 		Sort sort = new Sort(Direction.ASC , "infoType");
-		
 		List<CommunityInfo>cityList = communityService.getCommunityInfoByCityIdAndInfoType(user.getCityId(), "0",sort);
 		List<CommunityInfo>regionList = communityService.getCommunityInfoByRegionId(user.getCountyId(), sort);
 		List<CommunityInfo>sectList = communityService.getCommunityInfoBySectId(sect_id, sort);
@@ -1027,7 +1020,9 @@ public class CommunityController extends BaseController{
 	@ResponseBody
 	public String pushweixin(@RequestParam(required=false) String threadId,@RequestParam(required=false) String userId) throws Exception{
 		User user = userService.getById(Long.valueOf(userId));
-		gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+threadId, GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", threadId, user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
+		gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+threadId, 
+				GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", threadId, user.getName(), 
+				user.getTel(), user.getSect_name(), "请点击查看具体信息");
 		return "SUCCESS";
 	}
 	
@@ -1038,10 +1033,11 @@ public class CommunityController extends BaseController{
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/thread/solveThread", method = RequestMethod.POST)
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/thread/finish", method = RequestMethod.POST)
 	@ResponseBody
-	public BaseResult<Thread> solveThread(@ModelAttribute(Constants.USER)User user,@RequestParam(required=false) String threadId) throws Exception{
+	public BaseResult<Thread> finish(@ModelAttribute(Constants.USER)User user,@RequestParam(required=false) String threadId) throws Exception{
 		log.info("solveThread-------ThreadID:"+threadId);
-		return BaseResult.successResult(communityService.solveThread(Long.valueOf(threadId)));
+		return BaseResult.successResult(communityService.finishThread(Long.valueOf(threadId)));
 	}
 }
