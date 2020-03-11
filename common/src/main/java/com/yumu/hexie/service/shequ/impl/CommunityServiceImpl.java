@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.model.ModelConstant;
@@ -84,7 +85,8 @@ public class CommunityServiceImpl implements CommunityService {
 		thread.setUserSectId(user.getXiaoquId());
 		thread.setUserSectName(user.getXiaoquName());
 		thread.setStickPriority("0");	//默认优先级0，为最低
-		thread.setWhether("0");//未回复 默认
+		thread.setReplied(false);//未回复 默认
+		thread.setSolved(false);
 		threadRepository.save(thread);
 		
 		gotongService.sendThreadPubNotify(user, thread);
@@ -132,6 +134,7 @@ public class CommunityServiceImpl implements CommunityService {
 		threadCommentRepository.save(thread);
 	}
 	
+	@Transactional
 	@Override
 	public ThreadComment addComment(User user, ThreadComment comment) {
 	
@@ -145,15 +148,17 @@ public class CommunityServiceImpl implements CommunityService {
 		long threadId = comment.getThreadId();
 		Thread thread = threadRepository.findOne(threadId);
 		
-		if(thread.getUserId()==user.getId()) {
-			thread.setWhether("0");//未回复
-		}else {
-			thread.setWhether("1");//已回复
-			gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()), GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
+		if(thread.getUserId()!=user.getId()) {
+			thread.setReplied(true);//已回复
 		}
 		threadRepository.save(thread);
-		
 		threadCommentRepository.save(comment);
+		
+		if (thread.isReplied()) {
+			gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()), 
+					GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", 
+					Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
+		}
 		return comment;
 		
 	}
@@ -282,15 +287,13 @@ public class CommunityServiceImpl implements CommunityService {
 	
 	@Override
 	public ThreadComment getThreadCommentByTreadId(long threadCommentId) {
-		// TODO Auto-generated method stub
 		return threadCommentRepository.findOne(threadCommentId);
 	}
 
 	@Override
-	public Thread solveThread(long threadId) {
-		// TODO Auto-generated method stub
+	public Thread finishThread(long threadId) {
 		Thread thread = threadRepository.findOne(threadId);
-		thread.setSolve("1");
+		thread.setSolved(true);
 		return threadRepository.save(thread);
 	}
 	
