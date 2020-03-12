@@ -45,7 +45,6 @@ import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.common.SystemConfigService;
-import com.yumu.hexie.service.common.impl.GotongServiceImpl;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
 import com.yumu.hexie.service.user.UserService;
@@ -1019,10 +1018,8 @@ public class CommunityController extends BaseController{
 	@RequestMapping(value = "/thread/pushweixin", method = RequestMethod.POST)
 	@ResponseBody
 	public String pushweixin(@RequestParam(required=false) String threadId,@RequestParam(required=false) String userId) throws Exception{
-		User user = userService.getById(Long.valueOf(userId));
-		gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+threadId, 
-				GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", threadId, user.getName(), 
-				user.getTel(), user.getSect_name(), "请点击查看具体信息");
+		Thread thread = communityService.getThreadByTreadId(Long.valueOf(threadId));
+		gotongService.sendThreadReplyMsg(thread);
 		return "SUCCESS";
 	}
 	
@@ -1037,7 +1034,7 @@ public class CommunityController extends BaseController{
 	@RequestMapping(value = "/thread/finish", method = RequestMethod.POST)
 	@ResponseBody
 	public BaseResult<Thread> finish(@ModelAttribute(Constants.USER)User user,@RequestParam(required=false) String threadId) throws Exception{
-		log.info("solveThread-------ThreadID:"+threadId);
+		log.info("finish thread -------ThreadID:"+threadId);
 		return BaseResult.successResult(communityService.finishThread(Long.valueOf(threadId)));
 	}
 }

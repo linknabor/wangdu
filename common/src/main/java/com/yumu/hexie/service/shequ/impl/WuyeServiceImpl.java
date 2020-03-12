@@ -130,7 +130,7 @@ public class WuyeServiceImpl<T> implements WuyeService {
 			throw new BizValidateException("账单编号不存在!");
 		}
 		if (r.getData() != null ) {
-			List<RegionInfo>	list=regionInfoRepository.findAllByRegionType(r.getData().getSect_id());
+			List<RegionInfo>	list=regionInfoRepository.findBySectId(r.getData().getSect_id());
 			if(list.size()==0){
 				throw new BizValidateException("无法绑定当前小区！");
 			}

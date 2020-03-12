@@ -33,10 +33,13 @@ public class Thread implements Serializable{
 	private String createTime;	//创建时间
 	private long createDateTime;	//13位unixtime
 	private long userId;
+	private String userOpenId;	//openid
 	private String userName;
-	private String userHead;	
+	private String userHead;
 	private long userSectId;		//用户所在小区ID
 	private String userSectName; 	//用户所在小区名称
+	private String userAddress;
+	private String userTel;
 	private double userSectLatitude;	//用户所在小区纬度
 	private double userSectLongtitude;	//用户所在小区精度
 	private String attachmentUrl;	//一对多，逗号分割
@@ -282,6 +285,24 @@ public class Thread implements Serializable{
 	}
 	public void setSolved(boolean solved) {
 		this.solved = solved;
+	}
+	public String getUserAddress() {
+		return userAddress;
+	}
+	public void setUserAddress(String userAddress) {
+		this.userAddress = userAddress;
+	}
+	public String getUserTel() {
+		return userTel;
+	}
+	public void setUserTel(String userTel) {
+		this.userTel = userTel;
+	}
+	public String getUserOpenId() {
+		return userOpenId;
+	}
+	public void setUserOpenId(String userOpenId) {
+		this.userOpenId = userOpenId;
 	}
 	
 	

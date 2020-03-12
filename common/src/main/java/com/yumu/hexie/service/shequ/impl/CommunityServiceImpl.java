@@ -26,7 +26,6 @@ import com.yumu.hexie.model.community.ThreadCommentRepository;
 import com.yumu.hexie.model.community.ThreadRepository;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.common.GotongService;
-import com.yumu.hexie.service.common.impl.GotongServiceImpl;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
 
@@ -81,16 +80,17 @@ public class CommunityServiceImpl implements CommunityService {
 		thread.setThreadStatus(ModelConstant.THREAD_STATUS_NORMAL);
 		thread.setUserHead(user.getHeadimgurl());
 		thread.setUserId(user.getId());
+		thread.setUserOpenId(user.getOpenid());
 		thread.setUserName(user.getNickname());
 		thread.setUserSectId(user.getXiaoquId());
 		thread.setUserSectName(user.getXiaoquName());
+		thread.setUserAddress(user.getCell_addr());
+		thread.setUserTel(user.getTel());
 		thread.setStickPriority("0");	//默认优先级0，为最低
 		thread.setReplied(false);//未回复 默认
 		thread.setSolved(false);
 		threadRepository.save(thread);
-		
 		gotongService.sendThreadPubNotify(user, thread);
-		
 		return thread;
 	}
 
@@ -155,9 +155,7 @@ public class CommunityServiceImpl implements CommunityService {
 		threadCommentRepository.save(comment);
 		
 		if (thread.isReplied()) {
-			gotongService.pushweixin(user.getOpenid(), GotongServiceImpl.TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()), 
-					GotongServiceImpl.TEMPLATE_NOTICE_ID, "您好，您有新的消息", 
-					Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
+			gotongService.sendThreadReplyMsg(thread);
 		}
 		return comment;
 		
