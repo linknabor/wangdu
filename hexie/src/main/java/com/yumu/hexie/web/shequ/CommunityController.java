@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -170,11 +171,12 @@ public class CommunityController extends BaseController{
 	public BaseResult<String> addThread(HttpSession session, @RequestBody Thread thread) throws Exception{
 		
 		User user = (User)session.getAttribute(Constants.USER);
-		
-		if(!user.getSect_id().isEmpty()) {
-			log.error("user_sect_id:"+user.getSect_id());
+		if (user == null) {
+			return BaseResult.fail("用户未登陆。");
 		}
-		
+		if(StringUtils.isEmpty(user.getSect_id())) {
+			return BaseResult.fail("用户未绑定房屋，不能使用当前功能。");
+		}
 		user = userService.getById(user.getId());
 		
 		log.error("user_sect_id:"+user.getSect_id());
