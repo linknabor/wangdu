@@ -45,4 +45,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Transactional
 	@Query(value = "update user set total_bind = ?1 where id = ?2 ", nativeQuery = true)
 	public int updateUserTotalBind(long totalBind, long id);
+	
+	@Modifying
+	@Transactional
+	@Query(value = "update user set extraOpenId = ?1 where id = ?2 ", nativeQuery = true)
+	public int updateUserExtraOpenId(String extraOpenId, long id);
+	
 }

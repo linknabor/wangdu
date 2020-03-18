@@ -1,11 +1,10 @@
 package com.yumu.hexie.service.shequ;
 
-import com.yumu.hexie.integration.wuye.resp.BaseResult;
+import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
-import com.yumu.hexie.integration.wuye.vo.BindHouseDTO;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -20,7 +19,7 @@ public interface WuyeService {
 	// 1.房产列表
 	public HouseListVO queryHouse(String userId);
 	// 2.绑定房产
-	public BindHouseDTO bindHouse(User user,String stmtId,HexieHouse house);
+	public CommonDTO<User, HexieUser> bindHouse(User user,String stmtId,HexieHouse house);
 	// 3.删除房产
 	public boolean deleteHouse(User user, String userId,String houseId);
 	// 4.根据订单查询房产信息

@@ -17,13 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.TransactionUtil;
+import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
-import com.yumu.hexie.integration.wuye.vo.BindHouseDTO;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -56,7 +56,7 @@ public class WuyeServiceImpl<T> implements WuyeService {
 
 	@Override
 	@Transactional
-	public BindHouseDTO bindHouse(User user, String stmtId, HexieHouse house) {
+	public CommonDTO<User, HexieUser> bindHouse(User user, String stmtId, HexieHouse house) {
 		
 		logger.info("userId : " + user.getId());
 		logger.info("hosue is :" + house.toString());
@@ -85,10 +85,10 @@ public class WuyeServiceImpl<T> implements WuyeService {
 					currUser.getCell_id(), currUser.getCell_addr(), currUser.getOfficeTel(), currUser.getId());
 		}
 		
-		BindHouseDTO bindHouseDTO = new BindHouseDTO();
-		bindHouseDTO.setUser(currUser);
-		bindHouseDTO.setHexieUser(r.getData());
-		return bindHouseDTO;
+		CommonDTO<User, HexieUser> dto = new CommonDTO<>();
+		dto.setData1(currUser);
+		dto.setData2(r.getData());
+		return dto;
 	}
 
 

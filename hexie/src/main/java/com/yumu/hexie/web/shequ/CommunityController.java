@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +34,7 @@ import com.qiniu.api.io.PutRet;
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.StringUtil;
+import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.qiniu.util.QiniuUtil;
 import com.yumu.hexie.integration.wechat.service.FileService;
 import com.yumu.hexie.integration.wechat.util.WeixinUtil;
@@ -174,22 +174,10 @@ public class CommunityController extends BaseController{
 		if (user == null) {
 			return BaseResult.fail("用户未登陆。");
 		}
-		if(StringUtils.isEmpty(user.getSect_id())) {
-			return BaseResult.fail("用户未绑定房屋，不能使用当前功能。");
-		}
-		user = userService.getById(user.getId());
-		
-		log.error("user_sect_id:"+user.getSect_id());
-		
-		if(thread.getThreadContent().length()>200){
-			
-			return BaseResult.fail("发布信息内容超过200字。");
-		}
-		
-		communityService.addThread(user, thread);
-		
-		moveImgsFromTencent2Qiniu(thread);	//更新图片的路径
-		
+		CommonDTO<User, Thread> dto = communityService.addThread(user, thread);
+		moveImgsFromTencent2Qiniu(dto.getData2());	//更新图片的路径
+		User currUser = dto.getData1();
+		session.setAttribute(Constants.USER, currUser);
 		return BaseResult.successResult("信息发布成功。");
 		
 		
