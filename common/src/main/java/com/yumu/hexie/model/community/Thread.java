@@ -34,6 +34,7 @@ public class Thread implements Serializable{
 	private long createDateTime;	//13位unixtime
 	private long userId;
 	private String userOpenId;	//openid
+	private String extraOpenId;	//悦生活的openid
 	private String userName;
 	private String userHead;
 	private long userSectId;		//用户所在小区ID
@@ -303,6 +304,12 @@ public class Thread implements Serializable{
 	}
 	public void setUserOpenId(String userOpenId) {
 		this.userOpenId = userOpenId;
+	}
+	public String getExtraOpenId() {
+		return extraOpenId;
+	}
+	public void setExtraOpenId(String extraOpenId) {
+		this.extraOpenId = extraOpenId;
 	}
 	
 	

@@ -9,12 +9,15 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.DateUtil;
+import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.model.ModelConstant;
 import com.yumu.hexie.model.community.Annoucement;
 import com.yumu.hexie.model.community.AnnoucementRepository;
@@ -25,6 +28,7 @@ import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.community.ThreadCommentRepository;
 import com.yumu.hexie.model.community.ThreadRepository;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.user.UserRepository;
 import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
@@ -44,7 +48,11 @@ public class CommunityServiceImpl implements CommunityService {
 	@Inject
 	private AnnoucementRepository annoucementRepository;
 	
-	@Inject GotongService gotongService;
+	@Inject 
+	private GotongService gotongService;
+	
+	@Autowired
+	private UserRepository userRepository;
 	
 	@Override
 	public List<Thread> getThreadList(long userSectId, Pageable page) {
@@ -71,27 +79,41 @@ public class CommunityServiceImpl implements CommunityService {
 		return threadRepository.getThreadListByCategory(ModelConstant.THREAD_STATUS_NORMAL, category, page);
 	}
 
+	@Transactional
 	@Override
-	public Thread addThread(User user, Thread thread) {
+	public CommonDTO<User, Thread> addThread(User user, Thread thread) {
 		
+		if(StringUtils.isEmpty(user.getSect_id())) {
+			throw new BizValidateException("用户未绑定房屋，不能使用当前功能。");
+		}
+		if(thread.getThreadContent().length()>200){
+			throw new BizValidateException("发布信息内容超过200字。");
+		}
+		
+		User currUser = userRepository.findOne(user.getId());
 		thread.setCreateDateTime(System.currentTimeMillis());
 		thread.setCreateDate(DateUtil.dtFormat(new Date(), "yyyyMMdd"));
 		thread.setCreateTime(DateUtil.dtFormat(new Date().getTime(), "HHMMss"));
 		thread.setThreadStatus(ModelConstant.THREAD_STATUS_NORMAL);
-		thread.setUserHead(user.getHeadimgurl());
-		thread.setUserId(user.getId());
-		thread.setUserOpenId(user.getOpenid());
-		thread.setUserName(user.getNickname());
-		thread.setUserSectId(user.getXiaoquId());
-		thread.setUserSectName(user.getXiaoquName());
-		thread.setUserAddress(user.getCell_addr());
-		thread.setUserTel(user.getTel());
+		thread.setUserHead(currUser.getHeadimgurl());
+		thread.setUserId(currUser.getId());
+		thread.setUserOpenId(currUser.getOpenid());
+		thread.setUserName(currUser.getNickname());
+		thread.setUserSectId(currUser.getXiaoquId());
+		thread.setUserSectName(currUser.getXiaoquName());
+		thread.setUserAddress(currUser.getCell_addr());
+		thread.setUserTel(currUser.getTel());
 		thread.setStickPriority("0");	//默认优先级0，为最低
 		thread.setReplied(false);//未回复 默认
 		thread.setSolved(false);
+		thread.setExtraOpenId(thread.getExtraOpenId());//用户在悦生活的openid
 		threadRepository.save(thread);
-		gotongService.sendThreadPubNotify(user, thread);
-		return thread;
+		gotongService.sendThreadPubNotify(currUser, thread);
+		userRepository.updateUserExtraOpenId(thread.getExtraOpenId(), currUser.getId());
+		CommonDTO<User, Thread> dto = new CommonDTO<>();
+		dto.setData1(currUser);
+		dto.setData2(thread);
+		return dto;
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.MD5Util;
 import com.yumu.hexie.common.util.StringUtil;
+import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
@@ -32,7 +33,6 @@ import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.CellVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
-import com.yumu.hexie.integration.wuye.vo.BindHouseDTO;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -151,9 +151,9 @@ public class WuyeController extends BaseController {
 	public BaseResult<HexieHouse> addhouses(HttpSession httpSession, @ModelAttribute(Constants.USER)User user,
 			@RequestParam(required=false) String stmtId, @RequestParam(required=false) String houseId, @RequestBody HexieHouse house) throws Exception {
 		
-		BindHouseDTO dto = wuyeService.bindHouse(user, stmtId, house);
-		HexieUser u = dto.getHexieUser();
-		User currUser = dto.getUser();
+		CommonDTO<User, HexieUser> dto = wuyeService.bindHouse(user, stmtId, house);
+		HexieUser u = dto.getData2();
+		User currUser = dto.getData1();
 		log.info("HexieUser u = " + u);
 		if (u != null) {
 			pointService.addZhima(user, 1000, "zhima-house-"+user.getId()+"-"+houseId);
