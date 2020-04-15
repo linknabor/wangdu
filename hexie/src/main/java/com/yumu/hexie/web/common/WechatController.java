@@ -60,7 +60,8 @@ public class WechatController extends BaseController{
     		return "";
     	}
     }
-    
+   
+
     @ResponseBody
     @RequestMapping(value = "/orderNotify", method = RequestMethod.POST,produces="text/plain;charset=UTF-8" )
     public String orderNotify(PaymentOrderResult paymentOrderResult) throws Exception {

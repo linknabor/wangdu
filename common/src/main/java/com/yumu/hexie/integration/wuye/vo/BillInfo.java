@@ -15,6 +15,7 @@ public class BillInfo implements Serializable {
 	private String service_fee_cycle;
 	private String pay_status;
 	private String fee_price;
+	private String cycle_start_date;	
 	
 	private boolean selected =false;//为了展示用
 	
@@ -66,6 +67,11 @@ public class BillInfo implements Serializable {
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
-	
+	public String getCycle_start_date() {
+		return cycle_start_date;
+	}
+	public void setCycle_start_date(String cycle_start_date) {
+		this.cycle_start_date = cycle_start_date;
+	}
 	
 }

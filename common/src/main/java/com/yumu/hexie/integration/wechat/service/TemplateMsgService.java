@@ -18,9 +18,11 @@ import com.yumu.hexie.integration.wechat.entity.templatemsg.RegisterSuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.RepairOrderVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.TemplateItem;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.TemplateMsg;
+import com.yumu.hexie.integration.wechat.entity.templatemsg.ThreadPubVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.WuyePaySuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.YuyueOrderVO;
 import com.yumu.hexie.integration.wechat.util.WeixinUtil;
+import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.localservice.ServiceOperator;
 import com.yumu.hexie.model.localservice.repair.RepairOrder;
 import com.yumu.hexie.model.market.ServiceOrder;
@@ -37,8 +39,8 @@ public class TemplateMsgService {
 	public static String REG_SUCCESS_MSG_TEMPLATE = ConfigUtil.get("registerSuccessTemplate");
 	public static String WUYE_PAY_SUCCESS_MSG_TEMPLATE = ConfigUtil.get("wuyePaySuccessTemplate");
 	public static String REPAIR_ASSIGN_TEMPLATE = ConfigUtil.get("reapirAssginTemplate");
-	
 	public static String YUYUE_ASSIGN_TEMPLATE = ConfigUtil.get("yuyueNoticeTemplate");
+	public static String THREAD_PUB_TEMPLATE = ConfigUtil.get("threadPubTemplate");	//-->ori templateId
 	
 	/**
 	 * 模板消息发送
@@ -161,6 +163,16 @@ public class TemplateMsgService {
     	TemplateMsgService.sendMsg(msg, accessToken);
     	
     }
+    
+    /**
+     * 预约订单模板消息
+     * @param openId
+     * @param title
+     * @param billName
+     * @param requireTime
+     * @param url
+     * @param accessToken
+     */
     public static void sendYuyueBillMsg(String openId,String title,String billName, 
     			String requireTime, String url, String accessToken) {
 
@@ -179,5 +191,52 @@ public class TemplateMsgService {
         TemplateMsgService.sendMsg(msg, accessToken);
         
     }
+    
+    /**
+     * 发送客服人员模板消息，用于报修、业主意见等。
+     */
+    public static void sendThreadPubMsg(Thread thread, User staff, String accessToken) {
+    	
+    	TemplateMsg<ThreadPubVO> msg = new TemplateMsg<>();
+    	msg.setTouser(staff.getOpenid());	//客服人员openid
+    	msg.setUrl(GotongServiceImpl.THREAD_DETAIL + thread.getThreadId());	//客服链接
+    	msg.setTemplate_id(THREAD_PUB_TEMPLATE);	//模板ID
+    	String title = "您好，您有新的消息";
+    	String remark = "请点击查看具体信息";
+    	ThreadPubVO vo = new ThreadPubVO();
+    	vo.setTitle(new TemplateItem(title));
+    	vo.setThreadId(new TemplateItem(String.valueOf(thread.getThreadId())));
+    	vo.setUserName(new TemplateItem(thread.getUserName()));
+    	vo.setUserTel(new TemplateItem(thread.getUserTel()));
+    	vo.setUserAddress(new TemplateItem(thread.getUserAddress()));
+    	vo.setRemark(new TemplateItem(remark));
+    	msg.setData(vo);
+    	sendMsg(msg, accessToken);
+    	
+    }
+    
+    /**
+     * 发送客服人员模板消息，用于报修、业主意见等。
+     */
+    public static void sendThreadReplyMsg(Thread thread, String accessToken) {
+    	
+    	TemplateMsg<ThreadPubVO> msg = new TemplateMsg<>();
+    	msg.setTouser(thread.getUserOpenId());	//客服人员openid
+    	msg.setUrl(GotongServiceImpl.THREAD_DETAIL + thread.getThreadId());	//客服链接
+    	msg.setTemplate_id(THREAD_PUB_TEMPLATE);	//模板ID
+    	String title = "您好，您有新的消息";
+    	String remark = "请点击查看具体信息";
+    	ThreadPubVO vo = new ThreadPubVO();
+    	vo.setTitle(new TemplateItem(title));
+    	vo.setThreadId(new TemplateItem(String.valueOf(thread.getThreadId())));
+    	vo.setUserName(new TemplateItem(thread.getUserName()));
+    	vo.setUserTel(new TemplateItem(thread.getUserTel()));
+    	vo.setUserAddress(new TemplateItem(thread.getUserAddress()));
+    	vo.setRemark(new TemplateItem(remark));
+    	msg.setData(vo);
+    	sendMsg(msg, accessToken);
+    	
+    }
+    
 
 }

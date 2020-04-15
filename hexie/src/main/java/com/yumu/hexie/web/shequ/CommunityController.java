@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.qiniu.api.io.IoApi;
@@ -33,6 +34,7 @@ import com.qiniu.api.io.PutRet;
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.StringUtil;
+import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.qiniu.util.QiniuUtil;
 import com.yumu.hexie.integration.wechat.service.FileService;
 import com.yumu.hexie.integration.wechat.util.WeixinUtil;
@@ -165,24 +167,13 @@ public class CommunityController extends BaseController{
 	public BaseResult<String> addThread(HttpSession session, @RequestBody Thread thread) throws Exception{
 		
 		User user = (User)session.getAttribute(Constants.USER);
-		
-		if(!user.getSect_id().isEmpty()) {
-			log.error("user_sect_id:"+user.getSect_id());
+		if (user == null) {
+			return BaseResult.fail("用户未登陆。");
 		}
-		
-		user = userService.getById(user.getId());
-		
-		log.error("user_sect_id:"+user.getSect_id());
-		
-		if(thread.getThreadContent().length()>200){
-			
-			return BaseResult.fail("发布信息内容超过200字。");
-		}
-		
-		communityService.addThread(user, thread);
-		
-		moveImgsFromTencent2Qiniu(thread);	//更新图片的路径
-		
+		CommonDTO<User, Thread> dto = communityService.addThread(user, thread);
+		moveImgsFromTencent2Qiniu(dto.getData2());	//更新图片的路径
+		User currUser = dto.getData1();
+		session.setAttribute(Constants.USER, currUser);
 		return BaseResult.successResult("信息发布成功。");
 		
 		
@@ -915,14 +906,7 @@ public class CommunityController extends BaseController{
 			
 			return BaseResult.fail("您还没有填写小区信息。");
 		}
-		
-		if(sect_id == null){
-			
-			return BaseResult.fail("您还没有填写小区信息。");
-		}
-		
 		Sort sort = new Sort(Direction.ASC , "infoType");
-		
 		List<CommunityInfo>cityList = communityService.getCommunityInfoByCityIdAndInfoType(user.getCityId(), "0",sort);
 		List<CommunityInfo>regionList = communityService.getCommunityInfoByRegionId(user.getCountyId(), sort);
 		List<CommunityInfo>sectList = communityService.getCommunityInfoBySectId(sect_id, sort);
@@ -1007,5 +991,20 @@ public class CommunityController extends BaseController{
 		
 		return BaseResult.successResult("succeeded");
 		
+	}
+	
+	/**
+	 * 确定结束帖子
+	 * @param session
+	 * @param threadId
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/thread/finish", method = RequestMethod.POST)
+	@ResponseBody
+	public BaseResult<Thread> finish(@ModelAttribute(Constants.USER)User user,@RequestParam(required=false) String threadId) throws Exception{
+		log.info("finish thread -------ThreadID:"+threadId);
+		return BaseResult.successResult(communityService.finishThread(Long.valueOf(threadId)));
 	}
 }
