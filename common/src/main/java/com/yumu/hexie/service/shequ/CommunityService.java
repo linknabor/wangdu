@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.model.community.Annoucement;
 import com.yumu.hexie.model.community.CommunityInfo;
 import com.yumu.hexie.model.community.Thread;
@@ -50,7 +51,7 @@ public interface CommunityService {
 	 * @param thread
 	 * @return
 	 */
-	public Thread addThread(User user, Thread thread);
+	public CommonDTO<User, Thread> addThread(User user, Thread thread);
 	
 	/**
 	 * 3.删除帖子（实际更改帖子状态）
@@ -204,4 +205,6 @@ public interface CommunityService {
 	 * @return
 	 */
 	public ThreadComment getThreadCommentByTreadId(long threadCommentId);
+	
+	public Thread finishThread(long threadId);
 }

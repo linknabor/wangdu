@@ -1,3 +1,6 @@
 /common/target
 /hexie/target
 /hexiebk/target
+*.prefs
+*.log
+.settings

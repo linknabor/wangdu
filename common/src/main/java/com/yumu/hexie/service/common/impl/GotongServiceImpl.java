@@ -20,11 +20,8 @@ import org.springframework.stereotype.Service;
 import com.yumu.hexie.common.util.ConfigUtil;
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.customer.Article;
-import com.yumu.hexie.integration.wechat.entity.customer.DataJsonVo;
-import com.yumu.hexie.integration.wechat.entity.customer.DataVo;
 import com.yumu.hexie.integration.wechat.entity.customer.News;
 import com.yumu.hexie.integration.wechat.entity.customer.NewsMessage;
-import com.yumu.hexie.integration.wechat.entity.customer.Template;
 import com.yumu.hexie.integration.wechat.service.CustomService;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.model.community.RegionInfo;
@@ -64,13 +61,7 @@ public class GotongServiceImpl implements GotongService {
     
     public static String SUBSCRIBE_DETAIL = ConfigUtil.get("subscribeDetail");
     
-    public static String THREAD_NOTICE_URL = ConfigUtil.get("threadUrl");
-    
-    public static String TEMPLATE_NOTICE_URL = ConfigUtil.get("templateUrl");
-    
-    public static String TEMPLATE_NOTICE_ID = ConfigUtil.get("templateId");
-    
-    public static String THREAD_NOTICE_DESC = "业主姓名：NAME\r联系方式：TEL\r业主地址：CELL_ADDR\r消息类型：CATEGORY\r消息内容：CONTENT";
+    public static String THREAD_DETAIL = ConfigUtil.get("threadDetail");	//--> ori templateUrl
     
     public static Map<String, String>categoryMap;
     
@@ -182,70 +173,40 @@ public class GotongServiceImpl implements GotongService {
     }
     
     /**
-     * 发送模板消息
+     *发送模板消息通知客服人员
      */
     @Async
 	@Override
 	public void sendThreadPubNotify(User user, com.yumu.hexie.model.community.Thread thread) {
     	String sect_id = user.getSect_id();
-    	List<RegionInfo> listregioninfo = regionInfoRepository.findAllByRegionType(sect_id);
+    	List<RegionInfo> listregioninfo = regionInfoRepository.findBySectId(sect_id);
+    	String accessToken = systemConfigService.queryWXAToken();
     	for (int k = 0; k < listregioninfo.size(); k++) {
         	List<Staffing> list = staffingRepository.getStaffing(Long.toString(listregioninfo.get(k).getId()));
-        	for (int i = 0; i < list.size(); i++) {
-        		User useropenId = userService.getById(Long.parseLong(list.get(i).getStaffing_userid()));
-        		pushweixin(useropenId.getOpenid(),TEMPLATE_NOTICE_URL+Long.toString(thread.getThreadId()),TEMPLATE_NOTICE_ID, "您好，您有新的消息", Long.toString(thread.getThreadId()), user.getName(), user.getTel(), user.getSect_name(), "请点击查看具体信息");
-    		}
+        	if (list!=null && !list.isEmpty()) {
+				for (Staffing staff : list) {
+					try {
+						User staffUser = userService.getById(Long.valueOf(staff.getStaffing_userid()));
+						TemplateMsgService.sendThreadPubMsg(thread, staffUser, accessToken);
+					} catch (Exception e) {
+						LOG.error(e.getMessage(), e);
+					}
+	        		
+				}
+			}
 		}
     }
     
-    public static void main(String[] args) {
-    	
-    }
-    
+    /**
+     *维修、业主意见添加评论后通知业主
+     */
+    @Async
 	@Override
-    public void pushweixin(String openId,String threadid,String template,String firstval,String keyword1val,String keyword2val,String keyword3val,String keyword4val,String remarkval) {
-		LOG.error("openId:"+openId+"   threadid:"+threadid+"   template:"+template+"   firstval:"+firstval+"   keyword1val:"+keyword1val+"   keyword2val:"+keyword2val+"   keyword3val:"+keyword3val+"   keyword4val:"+keyword4val+"   remarkval:"+remarkval);
-		
-		Template msg = new Template();
-    	msg.setTouser(openId);//openID  wywOpenId:og0nw09cdaJZjwQlg8ICnsSCclTE 测试推送使用     测试机备份openid o08kOwJu6eA1Vr3cbV-Miqpm_EMA  内脏坏了
-    	msg.setUrl(threadid);//跳转地址
-    	msg.setTemplate_id(template);//模板id
-		DataVo data = new DataVo();
-		
-		DataJsonVo first = new DataJsonVo();
-		first.setValue(firstval); //标题
-		first.setColor("#173177");
-		data.setFirst(first);
-		
-		DataJsonVo keyword1 = new DataJsonVo();
-		keyword1.setValue(keyword1val);//内容1
-		keyword1.setColor("#173177"); 
-		data.setKeyword1(keyword1);
-		
-		DataJsonVo keyword2 = new DataJsonVo();
-		keyword2.setValue(keyword2val);//内容2
-		keyword2.setColor("#173177");
-		data.setKeyword2(keyword2);
-		
-		DataJsonVo keyword3 = new DataJsonVo();
-		keyword3.setValue(keyword3val);//内容3
-		keyword3.setColor("#173177");
-		data.setKeyword3(keyword3);
-		
-		DataJsonVo keyword4 = new DataJsonVo();
-		keyword4.setValue(keyword4val);//内容4
-		keyword4.setColor("#173177");
-		data.setKeyword4(keyword4);
-		
-		DataJsonVo remark = new DataJsonVo();
-		remark.setValue(remarkval);//结尾
-		remark.setColor("#173177");
-		data.setRemark(remark);
-		
-		msg.setData(data);
-		String accessToken = systemConfigService.queryWXAToken();
-//		String accessToken = "18_OMUjOTiLieCH7qbjBnGCvnMIA-Tm_8jeVH_1KNeYPZibssougXAsTsDEU1G_xCqrSyUZ2Lfo46YxqRCFvXo_rBq_V7-6Qp1DUstm2LKM5N4BS4QCAZ5VcBV1X5W3q48cledTIwcIaU3RSvSsWPPbABACVV";
-		CustomService.sendCustomerMessage(msg, accessToken);
+	public void sendThreadReplyMsg(com.yumu.hexie.model.community.Thread thread) {
+    	
+    	String accessToken = systemConfigService.queryWXAToken();
+		TemplateMsgService.sendThreadReplyMsg(thread, accessToken);
+	
     }
     
 }

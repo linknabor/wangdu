@@ -67,6 +67,7 @@ public class WuyeUtil {
 	private static final String SECT_LIST_URL = "querySectByCspIdSDO.do?csp_id=%s";
 	private static final String MNG_LIST_URL = "queryMngByIdSDO.do?sect_id=%s&build_id=%s&unit_id=%s&data_type=%s";
 	private static final String PAY_WATER_URL = "getMngCellByTradeIdSDO.do?user_id=%s&trade_water_id=%s"; // 获取支付记录涉及的房屋
+	private static final String BILL_RESTRICTION = "billRestrictionSDO.do?bill_id=%s"; // 获取账单限制是否通过
 	
 	public static BaseResult<BillListVO> quickPayInfo(String stmtId, String currPage, String totalCount) {
 		String url = REQUEST_ADDRESS + String.format(QUICK_PAY_URL, stmtId, currPage, totalCount);
@@ -126,11 +127,23 @@ public class WuyeUtil {
 		String url = REQUEST_ADDRESS + String.format(BILL_LIST_URL, userId,payStatus,startDate,endDate,currentPage,totalCount, house_id);
 		return (BaseResult<BillListVO>)httpGet(url,BillListVO.class);
 	}
+	
+	/**
+	 * 校验账单数量是否是参数的整数倍
+	 */
+	public static void checkBillRestriction(String anotherbillIds) {
+		
+		String reurl = REQUEST_ADDRESS + String.format(BILL_RESTRICTION, anotherbillIds);
+		httpGet(reurl,String.class);
+	}
+	
 	// 9.账单详情 anotherbillIds(逗号分隔) 汇总了去支付,来自BillInfo的bill_id
-	public static BaseResult<PaymentInfo> getBillDetail(String userId,String stmtId,String anotherbillIds){
+	@SuppressWarnings("unchecked")
+	public static BaseResult<PaymentInfo> getBillDetail(String userId,String stmtId,String anotherbillIds) throws ValidationException{
 		String url = REQUEST_ADDRESS + String.format(BILL_DETAIL_URL, userId,stmtId,anotherbillIds);
 		return (BaseResult<PaymentInfo>)httpGet(url,PaymentInfo.class);
 	}
+	
 	// 10.缴费
 	public static BaseResult<WechatPayInfo> getPrePayInfo(String userId,String billId,String stmtId,String openId,
 		String couponUnit, String couponNum, String couponId,String mianBill,String mianAmt, String reduceAmt,

@@ -45,7 +45,7 @@ public class MessageServiceImpl implements MessageService {
 		//1.判断用户是否绑定房屋
 		if(!StringUtil.isEmpty(sect_id) && !"0".equals(sect_id))//绑定了房屋
 		{
-			regions = regionInfoRepository.findAllByRegionType(sect_id);
+			regions = regionInfoRepository.findBySectId(sect_id);
 			if(regions.size()!=0)
 			{
 				RegionInfo region = regions.get(0);
