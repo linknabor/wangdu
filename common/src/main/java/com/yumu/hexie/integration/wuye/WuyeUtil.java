@@ -54,13 +54,9 @@ public class WuyeUtil {
 	private static final String SYS_ADD_HOUSE_URL = "billSaveHoseSDO.do?user_id=%s&stmt_id=%s&house_id=%s"; // 扫一扫（添加房子）
 	private static final String DEL_HOUSE_URL = "delHouseSDO.do?user_id=%s&mng_cell_id=%s"; // 删除房子
 	private static final String BILL_LIST_URL = "getBillListMSDO.do?user_id=%s&pay_status=%s&startDate=%s&endDate=%s&curr_page=%s&total_count=%s&house_id=%s"; // 获取账单列表
-	private static final String BILL_DETAIL_URL = "getBillInfoMSDO.do?user_id=%s&stmt_id=%s&bill_id=%s"; // 获取账单详情
 	private static final String PAY_RECORD_URL = "payMentRecordSDO.do?user_id=%s&startDate=%s&endDate=%s"; // 获取支付记录列表
 	private static final String PAY_INFO_URL = "payMentRecordInfoSDO.do?user_id=%s&trade_water_id=%s"; // 获取支付记录详情
-	private static final String QUICK_PAY_URL = "quickPaySDO.do?stmt_id=%s&curr_page=%s&total_count=%s"; // 快捷支付
 	private static final String WXLOGIN_URL = "weixinLoginSDO.do?weixin_id=%s"; // 登录验证（微信登录）
-	private static final String WX_PAY_URL = "wechatPayRequestSDO.do?user_id=%s&bill_id=%s&stmt_id=%s&openid=%s&coupon_unit=%s&coupon_num=%s"
-			+ "&coupon_id=%s&from_sys=%s&mianBill=%s&mianAmt=%s&reduceAmt=%s&invoice_title_type=%s&credit_code=%s&mobile=%s&invoice_title=%s"; // 微信支付请求
 	private static final String WX_PAY_NOTICE = "wechatPayQuerySDO.do?user_id=%s&bill_id=%s&stmt_id=%s&trade_water_id=%s&package=%s"; // 微信支付返回
 	//private static final String GET_LOCATION_URL = "getGeographicalPositionSDO.do"; // 用户地理位置
 	private static final String COUPON_USE_QUERY_URL = "conponUseQuerySDO.do?user_id=%s";
@@ -68,11 +64,6 @@ public class WuyeUtil {
 	private static final String MNG_LIST_URL = "queryMngByIdSDO.do?sect_id=%s&build_id=%s&unit_id=%s&data_type=%s";
 	private static final String PAY_WATER_URL = "getMngCellByTradeIdSDO.do?user_id=%s&trade_water_id=%s"; // 获取支付记录涉及的房屋
 	private static final String BILL_RESTRICTION = "billRestrictionSDO.do?bill_id=%s"; // 获取账单限制是否通过
-	
-	public static BaseResult<BillListVO> quickPayInfo(String stmtId, String currPage, String totalCount) {
-		String url = REQUEST_ADDRESS + String.format(QUICK_PAY_URL, stmtId, currPage, totalCount);
-		return (BaseResult<BillListVO>)httpGet(url,BillListVO.class);
-	}
 	
 	// 1.房产列表
 	public static BaseResult<HouseListVO> queryHouse(String userId){
@@ -135,28 +126,6 @@ public class WuyeUtil {
 		
 		String reurl = REQUEST_ADDRESS + String.format(BILL_RESTRICTION, anotherbillIds);
 		httpGet(reurl,String.class);
-	}
-	
-	// 9.账单详情 anotherbillIds(逗号分隔) 汇总了去支付,来自BillInfo的bill_id
-	@SuppressWarnings("unchecked")
-	public static BaseResult<PaymentInfo> getBillDetail(String userId,String stmtId,String anotherbillIds) throws ValidationException{
-		String url = REQUEST_ADDRESS + String.format(BILL_DETAIL_URL, userId,stmtId,anotherbillIds);
-		return (BaseResult<PaymentInfo>)httpGet(url,PaymentInfo.class);
-	}
-	
-	// 10.缴费
-	public static BaseResult<WechatPayInfo> getPrePayInfo(String userId,String billId,String stmtId,String openId,
-		String couponUnit, String couponNum, String couponId,String mianBill,String mianAmt, String reduceAmt,
-		String invoice_title_type, String credit_code, String mobile, String invoice_title) throws Exception {
-		invoice_title = URLEncoder.encode(invoice_title,"GBK");
-		String url = REQUEST_ADDRESS + String.format(WX_PAY_URL, userId,billId,stmtId,openId,
-					couponUnit,couponNum,couponId,SYSTEM_NAME,mianBill, mianAmt, reduceAmt, invoice_title_type, credit_code, mobile, invoice_title);
-		
-		BaseResult baseResult = httpGet(url,WechatPayInfo.class);
-		if (!baseResult.isSuccess()) {
-			throw new ValidationException(baseResult.getData().toString());
-		}
-		return (BaseResult<WechatPayInfo>)baseResult;
 	}
 	
 	// 11.通知已支付

@@ -23,9 +23,9 @@ import com.yumu.hexie.service.exception.BizValidateException;
 public class CreateBlueUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(CreateBlueUtil.class);
-	private static final String account = "shnbxxkj";
-	private static final String password = "Sh666666";
-	private static final String urlStr = "http://222.73.117.158/msg/";
+	private static final String account = "N5033077";
+	private static final String password = "bUCsFJxTrW6dc9";
+	private static final String urlStr = "https://smssh1.253.com/msg/";
 	
 	
 	public static boolean sendMessage(String mobile,String message,long id ){
@@ -104,20 +104,11 @@ public class CreateBlueUtil {
 		} catch (Exception e) {
 			
 			log.error(e.getMessage());
-			e.printStackTrace();
 			
 		} 
 		
 		return ret;
 	}
 	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-
-		CreateBlueUtil.send("18116419486", "您好，您的预约已经收到，服务人员将尽快与您确认。");
-		
-	}
 
 }

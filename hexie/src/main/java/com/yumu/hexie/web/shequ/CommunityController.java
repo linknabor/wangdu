@@ -44,7 +44,6 @@ import com.yumu.hexie.model.community.CommunityInfo;
 import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.community.ThreadComment;
 import com.yumu.hexie.model.user.User;
-import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.common.SystemConfigService;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.shequ.CommunityService;
@@ -74,9 +73,6 @@ public class CommunityController extends BaseController{
 	
 	@Inject
 	private SystemConfigService systemConfigService;
-	
-	@Inject 
-	private GotongService gotongService;
 	
 	/*****************[BEGIN]帖子********************/
 	
@@ -995,22 +991,6 @@ public class CommunityController extends BaseController{
 		
 		return BaseResult.successResult("succeeded");
 		
-	}
-	
-	
-	/**
-	 * 推送模板消息
-	 * @param session
-	 * @param threadId
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping(value = "/thread/pushweixin", method = RequestMethod.POST)
-	@ResponseBody
-	public String pushweixin(@RequestParam(required=false) String threadId,@RequestParam(required=false) String userId) throws Exception{
-		Thread thread = communityService.getThreadByTreadId(Long.valueOf(threadId));
-		gotongService.sendThreadReplyMsg(thread);
-		return "SUCCESS";
 	}
 	
 	/**
