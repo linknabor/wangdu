@@ -31,6 +31,7 @@ import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.common.SmsService;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.o2o.OperatorService;
+import com.yumu.hexie.service.shequ.WuyeService;
 import com.yumu.hexie.service.user.UserService;
 import com.yumu.hexie.web.BaseController;
 import com.yumu.hexie.web.BaseResult;
@@ -49,8 +50,8 @@ public class UserController extends BaseController{
 	private SmsService smsService;
 	@Autowired
     private OperatorService operatorService;
-    
-    
+    @Autowired
+    private WuyeService wuyeService;
 
     @Value(value = "${testMode}")
     private Boolean testMode;
@@ -78,6 +79,7 @@ public class UserController extends BaseController{
 			if(!needClearSession){
 			    session.setAttribute(Constants.USER, user);
 			    UserInfo userInfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
+			    userInfo.setQrcodeOperator(wuyeService.isQrcodeOperator(user));
 			    long endTime = System.currentTimeMillis();
 				log.info("user:" + user.getName() + "登陆，耗时：" + ((endTime-beginTime)/1000));
 			    return new BaseResult<UserInfo>().success(userInfo);

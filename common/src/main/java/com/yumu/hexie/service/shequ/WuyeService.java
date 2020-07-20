@@ -51,5 +51,7 @@ public interface WuyeService {
 	
 	//修正已绑定房屋用户房屋不正确的问题
 	public <T> void fixUserBindedHouses(String userId);
+	//查询是否为二维码收费员
+	Boolean isQrcodeOperator(User user);
 	
 }
