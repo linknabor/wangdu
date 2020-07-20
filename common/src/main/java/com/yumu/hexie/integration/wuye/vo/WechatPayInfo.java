@@ -2,6 +2,8 @@ package com.yumu.hexie.integration.wuye.vo;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class WechatPayInfo implements Serializable {
 
 	private static final long serialVersionUID = 2567954737062142484L;
@@ -9,12 +11,16 @@ public class WechatPayInfo implements Serializable {
 	private String trade_water_id;
 	private String timestamp;
 	private String noncestr;
+	@JsonProperty("package")
 	private String packageValue;//在后台及js端为package 关键字。。
 	private String signtype;
 	private String paysign;
 	private String user_pay_type;	//用户支付情况，0表示新用户首次支付，1表示老用户首次支付，2表示老用户非首次支付，返回值为空表示活动已结束
 	private String packageId;
-	private String token_id;
+	@JsonProperty("PAYURL")
+	private String payurl;
+	@JsonProperty("pay_result")	
+	private String payResult;	//中投绑卡支付，非首次支付成功后有这个字段
 	
 	public String getAppid() {
 		return appid;
@@ -74,13 +80,26 @@ public class WechatPayInfo implements Serializable {
 	public String getPackageId() {
 		return packageId;
 	}
-	public String getToken_id() {
-		return token_id;
+	public String getPayurl() {
+		return payurl;
 	}
-	public void setToken_id(String token_id) {
-		this.token_id = token_id;
+	public void setPayurl(String payurl) {
+		this.payurl = payurl;
 	}
-
+	public String getPayResult() {
+		return payResult;
+	}
+	public void setPayResult(String payResult) {
+		this.payResult = payResult;
+	}
+	@Override
+	public String toString() {
+		return "WechatPayInfo [appid=" + appid + ", trade_water_id=" + trade_water_id + ", timestamp=" + timestamp
+				+ ", noncestr=" + noncestr + ", packageValue=" + packageValue + ", signtype=" + signtype + ", paysign="
+				+ paysign + ", user_pay_type=" + user_pay_type + ", packageId=" + packageId + ", payurl=" + payurl
+				+ ", payResult=" + payResult + "]";
+	}
+	
 	
 	
 }
