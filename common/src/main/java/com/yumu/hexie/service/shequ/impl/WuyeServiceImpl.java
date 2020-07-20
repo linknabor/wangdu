@@ -5,20 +5,23 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.inject.Inject;
-import javax.xml.bind.ValidationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.yumu.hexie.common.util.TransactionUtil;
 import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
+import com.yumu.hexie.integration.wuye.WuyeUtil2;
+import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
@@ -32,6 +35,8 @@ import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
 import com.yumu.hexie.model.community.RegionInfo;
 import com.yumu.hexie.model.community.RegionInfoRepository;
 import com.yumu.hexie.model.market.ServiceOrder;
+import com.yumu.hexie.model.user.BankCard;
+import com.yumu.hexie.model.user.BankCardRepository;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.model.user.UserRepository;
 import com.yumu.hexie.service.exception.BizValidateException;
@@ -48,6 +53,10 @@ public class WuyeServiceImpl<T> implements WuyeService {
 	private RegionInfoRepository regionInfoRepository;
 	@Inject
 	private TransactionUtil<T> transactionUtil;
+	@Autowired
+	private WuyeUtil2 wuyeUtil2;
+	@Autowired
+	private BankCardRepository bankCardRepository;
 	
 	@Override
 	public HouseListVO queryHouse(String userId) {
@@ -161,24 +170,60 @@ public class WuyeServiceImpl<T> implements WuyeService {
 	}
 
 	@Override
-	public PaymentInfo getBillDetail(String userId, String stmtId,
-			String anotherbillIds) {
-		try {
-			return WuyeUtil.getBillDetail(userId, stmtId, anotherbillIds).getData();
-		} catch (ValidationException e) {
-			logger.error(e.getMessage(), e);
-		}
-		return null;
+	public PaymentInfo getBillDetail(User user, String stmtId, String anotherbillIds, String regionName) throws Exception {
+		
+		String targetUrl = getRegionUrl(regionName);
+		return wuyeUtil2.getBillDetail(user, stmtId, anotherbillIds, targetUrl).getData();
 	}
 
 	@Override
-	public WechatPayInfo getPrePayInfo(String userId, String billId,
-			String stmtId, String openId, String couponUnit, String couponNum, 
-			String couponId,String mianBill,String mianAmt, String reduceAmt, 
-			String invoice_title_type, String credit_code, String mobile, String invoice_title) throws Exception {
-		return WuyeUtil.getPrePayInfo(userId, billId, stmtId, openId, couponUnit, couponNum, couponId,mianBill,mianAmt, reduceAmt, 
-				invoice_title_type, credit_code, mobile, invoice_title)
-				.getData();
+	@Transactional
+	public WechatPayInfo getPrePayInfo(PrepayRequestDTO prepayRequestDTO) throws Exception {
+		
+		User user = prepayRequestDTO.getUser();
+		if (user.getId() == 0) {
+			logger.info("qrcode pay, no user id .");
+		}else {
+			User currUser = userRepository.findOne(user.getId());
+			prepayRequestDTO.setUser(currUser);
+		}
+		
+		if ("1".equals(prepayRequestDTO.getPayType())) {	//银行卡支付
+			String remerber = prepayRequestDTO.getRemember();
+			if ("1".equals(remerber)) {	//新卡， 需要记住卡号的情况
+				
+				Assert.hasText(prepayRequestDTO.getCustomerName(), "持卡人姓名不能为空。");
+				Assert.hasText(prepayRequestDTO.getAcctNo(), "卡号不能为空。");
+				Assert.hasText(prepayRequestDTO.getCertId(), "证件号不能为空。");
+				Assert.hasText(prepayRequestDTO.getPhoneNo(), "银行预留手机号不能为空。");
+				
+				BankCard bankCard = bankCardRepository.findByAcctNo(prepayRequestDTO.getAcctNo());
+				if (bankCard == null) {
+					bankCard = new BankCard();
+				}
+				bankCard.setAcctName(prepayRequestDTO.getCustomerName());
+				bankCard.setAcctNo(prepayRequestDTO.getAcctNo());
+				bankCard.setBankCode("");	//TODO 
+				bankCard.setBankName("");	//TODO
+				bankCard.setBranchName("");	//TODO
+				bankCard.setBranchNo("");	//TODO
+				bankCard.setPhoneNo(prepayRequestDTO.getPhoneNo());
+				bankCard.setUserId(prepayRequestDTO.getUser().getId());
+				bankCard.setUserName(prepayRequestDTO.getUser().getName());
+				//支付成功回调的时候还要保存quickToken
+				bankCardRepository.save(bankCard);
+			} 
+			if (!StringUtils.isEmpty(prepayRequestDTO.getCardId())) {	//选卡支付
+				BankCard selBankCard = bankCardRepository.findOne(Long.valueOf(prepayRequestDTO.getCardId()));
+				if (StringUtils.isEmpty(selBankCard.getQuickToken())) {
+					throw new BizValidateException("未绑定的银行卡。");
+				}
+				prepayRequestDTO.setQuickToken(selBankCard.getQuickToken());
+				prepayRequestDTO.setPhoneNo(selBankCard.getPhoneNo());
+			}
+		}
+		WechatPayInfo wechatPayInfo = wuyeUtil2.getPrePayInfo(prepayRequestDTO).getData();
+		return wechatPayInfo;
 	}
 
 	public PaymentInfo queryPayMent(String userId, String waterId) {
@@ -213,8 +258,8 @@ public class WuyeServiceImpl<T> implements WuyeService {
 	}
 
 	@Override
-	public BillListVO quickPayInfo(String stmtId, String currPage, String totalCount) {
-		return WuyeUtil.quickPayInfo(stmtId, currPage, totalCount).getData();
+	public BillListVO quickPayInfo(User user, String stmtId, String currPage, String totalCount) throws Exception {
+		return wuyeUtil2.quickPayInfo(user, stmtId, currPage, totalCount).getData();
 	}
 
 	@Override
@@ -308,38 +353,15 @@ public class WuyeServiceImpl<T> implements WuyeService {
 		
 	}
 	
-//	@Override
-//	@Transactional
-//	public User setDefaultAddress(User user, HexieUser u) {
-//
-//		User currUser = userRepository.findOne(user.getId());
-//		
-//		Long totalBind = currUser.getTotal_bind();
-//		if (totalBind == null) {
-//			totalBind = 0l;
-//		}
-//		if (!StringUtils.isEmpty(u.getTotal_bind())) {
-//			if (u.getTotal_bind() > 0) {
-//				totalBind = u.getTotal_bind();	//如果值不为空，说明是跑批程序返回回来的，直接取值即可，如果值是空，走下面的else累加即可
-//			}
-//		}
-//		if (totalBind == 0) {
-//			totalBind = totalBind + 1;
-//		}
-//		currUser.setTotal_bind(totalBind);
-//		currUser.setXiaoquName(u.getSect_name());
-//		currUser.setProvince(u.getProvince_name());
-//		currUser.setCity(u.getCity_name());
-//		currUser.setCounty(u.getRegion_name());
-//		currUser.setSectId(u.getSect_id());	
-//		currUser.setCspId(u.getCsp_id());
-//		currUser.setOfficeTel(u.getOffice_tel());
-//		userRepository.updateUserByHouse(currUser.getXiaoquId(), currUser.getXiaoquName(), 
-//				currUser.getTotalBind(), currUser.getProvince(), currUser.getCity(), currUser.getCountry(), 
-//				currUser.getSectId(), currUser.getCspId(), currUser.getOfficeTel(), currUser.getId());
-//		
-//		return currUser;
-//		
-//	}
+	/**
+	 * 获取需要发送的链接地址
+	 * @param regionName
+	 * @return
+	 */
+	private String getRegionUrl(String regionName) {
+		
+		return "";
+		
+	}
 
 }

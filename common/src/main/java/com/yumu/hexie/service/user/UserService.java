@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import com.yumu.hexie.integration.wechat.entity.AccessTokenOAuth;
 import com.yumu.hexie.integration.wechat.entity.user.UserWeiXin;
 import com.yumu.hexie.model.user.User;
 
@@ -29,5 +30,9 @@ public interface UserService {
 	void bindWuYeId(User user);
 	List<User> getByOpenId(String openId);
 	boolean checkDuplicateLogin(HttpSession httpSession);
+	
+	AccessTokenOAuth getAccessTokenOAuth(String code, String appid);
+	AccessTokenOAuth getAlipayAuth(String code);
+	
 	
 }

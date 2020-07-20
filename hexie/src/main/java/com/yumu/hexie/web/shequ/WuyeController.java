@@ -9,6 +9,7 @@ import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,7 @@ import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
+import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.CellVO;
@@ -52,6 +54,7 @@ import com.yumu.hexie.service.user.PointService;
 import com.yumu.hexie.service.user.UserService;
 import com.yumu.hexie.web.BaseController;
 import com.yumu.hexie.web.BaseResult;
+import com.yumu.hexie.web.shequ.vo.PrepayReqVO;
 
 @Controller(value = "wuyeController")
 public class WuyeController extends BaseController {
@@ -235,36 +238,41 @@ public class WuyeController extends BaseController {
 		return BaseResult.successResult("succeeded");
 	}
 	
-	
+	/***************** [BEGIN]缴费 
+	 * @throws Exception ********************/
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/getBillDetail", method = RequestMethod.GET)
 	@ResponseBody
-	public BaseResult<PaymentInfo> getBillDetail(@ModelAttribute(Constants.USER)User user,
-			@RequestParam(required=false) String billId,@RequestParam(required=false) String stmtId) throws Exception {
-		return BaseResult.successResult(WuyeUtil.getBillDetail(user.getWuyeId(), stmtId, billId).getData());
+	public BaseResult<PaymentInfo> getBillDetail(@ModelAttribute(Constants.USER) User user,
+			@RequestParam(required = false) String billId, @RequestParam(required = false) String stmtId,
+			@RequestParam(required = false) String regionname) throws Exception {
+		
+		PaymentInfo paymentInfo = wuyeService.getBillDetail(user, stmtId, billId, regionname);
+		return BaseResult.successResult(paymentInfo);
 	}
 	
-	//stmtId在快捷支付的时候会用到
+	/**
+	 * 创建交易，获取预支付ID
+	 * stmtId在快捷支付的时候会用到
+	 * @param user
+	 * @param prepayReq
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/getPrePayInfo", method = RequestMethod.POST)
 	@ResponseBody
-	public BaseResult<WechatPayInfo> getPrePayInfo(@ModelAttribute(Constants.USER)User user,
-			@RequestParam(required=false) String billId,@RequestParam(required=false) String stmtId,
-			@RequestParam(required=false) String couponUnit, @RequestParam(required=false) String couponNum,
-			@RequestParam(required=false) String couponId, @RequestParam(required=false) String mianBill,
-			@RequestParam(required=false) String mianAmt, @RequestParam(required=false) String reduceAmt,
-			@RequestParam(required=false) String invoice_title_type, @RequestParam(required=false) String credit_code,
-			@RequestParam(required=false) String invoice_title)
-			throws Exception {
-		WechatPayInfo result;
-		try {
-			result = wuyeService.getPrePayInfo(user.getWuyeId(), billId, stmtId, user.getOpenid(), 
-					couponUnit, couponNum, couponId, mianBill, mianAmt, reduceAmt, invoice_title_type, credit_code, user.getTel(), invoice_title);
-		} catch (Exception e) {
-			
-			e.printStackTrace();
-			return BaseResult.fail(e.getMessage());
-		}
-	    return BaseResult.successResult(result);
+	public BaseResult<WechatPayInfo> getPrePayInfo(@ModelAttribute(Constants.USER) User user,
+			@RequestBody PrepayReqVO prepayReqVo) throws Exception {
+		
+		WechatPayInfo result = new WechatPayInfo();
+		log.info("prepayReqVo : " + prepayReqVo);
+		PrepayRequestDTO dto = new PrepayRequestDTO();
+		BeanUtils.copyProperties(prepayReqVo, dto);
+		dto.setUser(user);
+		log.info("prepayRequestDTO : " + dto);
+		result = wuyeService.getPrePayInfo(dto);
+		return BaseResult.successResult(result);
 	}	
 	
 	/**
@@ -302,12 +310,14 @@ public class WuyeController extends BaseController {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/quickPayBillList/{stmtId}/{currPage}/{totalCount}", method = RequestMethod.GET)
 	@ResponseBody
-	public BaseResult<BillListVO> quickPayBillList(@ModelAttribute(Constants.USER)User user,
-			@PathVariable String stmtId, @PathVariable String currPage, @PathVariable String totalCount) throws Exception {
-		BillListVO listVo= wuyeService.quickPayInfo(stmtId, currPage, totalCount);
-		if(listVo != null) {
+	public BaseResult<BillListVO> quickPayBillList(@ModelAttribute(Constants.USER) User user,
+			@PathVariable String stmtId, @PathVariable String currPage, @PathVariable String totalCount)
+			throws Exception {
+		BillListVO listVo = wuyeService.quickPayInfo(user, stmtId, currPage, totalCount);
+		if (listVo != null) {
 			return BaseResult.successResult(listVo);
 		} else {
 			return BaseResult.successResult(null);

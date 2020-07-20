@@ -1,6 +1,7 @@
 package com.yumu.hexie.service.shequ;
 
 import com.yumu.hexie.dto.CommonDTO;
+import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
@@ -15,7 +16,7 @@ import com.yumu.hexie.model.user.User;
 public interface WuyeService {
 
 	//0. 快捷缴费信息
-	public BillListVO quickPayInfo(String stmtId, String currPage, String totalCount);
+	public BillListVO quickPayInfo(User user, String stmtId, String currPage, String totalCount) throws Exception;
 	// 1.房产列表
 	public HouseListVO queryHouse(String userId);
 	// 2.绑定房产
@@ -34,12 +35,9 @@ public interface WuyeService {
 	// 8.账单记录
 	public BillListVO queryBillList(String userId,String payStatus,String startDate,String endDate,String currentPage, String totalCount, String house_id);
 	// 9.账单详情 anotherbillIds(逗号分隔) 汇总了去支付,来自BillInfo的bill_id
-	public PaymentInfo getBillDetail(String userId,String stmtId,String anotherbillIds);
+	PaymentInfo getBillDetail(User user, String stmtId, String anotherbillIds, String regionName) throws Exception;
 	// 10.缴费
-	public WechatPayInfo getPrePayInfo(String userId,String billId,String stmtId, 
-			String openId, String couponUnit, String couponNum, 
-			String couponId,String mianBill,String mianAmt, String reduceAmt, 
-			String invoice_title_type, String credit_code, String mobile, String invoice_title) throws Exception;
+	WechatPayInfo getPrePayInfo(PrepayRequestDTO prepayRequestDTO) throws Exception;
 	// 11.通知已支付
 	public PayResult noticePayed(User user,String billId,String stmtId, String tradeWaterId, String packageId, String bind_switch);
 	// 12.查询是否已经用过红包
