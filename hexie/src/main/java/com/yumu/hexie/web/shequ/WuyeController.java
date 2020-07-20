@@ -29,12 +29,14 @@ import com.yumu.hexie.common.util.StringUtil;
 import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wechat.service.TemplateMsgService;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
+import com.yumu.hexie.integration.wuye.dto.DiscountViewRequestDTO;
 import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.CellVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
+import com.yumu.hexie.integration.wuye.vo.Discounts;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -54,6 +56,7 @@ import com.yumu.hexie.service.user.PointService;
 import com.yumu.hexie.service.user.UserService;
 import com.yumu.hexie.web.BaseController;
 import com.yumu.hexie.web.BaseResult;
+import com.yumu.hexie.web.shequ.vo.DiscountViewReqVO;
 import com.yumu.hexie.web.shequ.vo.PrepayReqVO;
 
 @Controller(value = "wuyeController")
@@ -561,5 +564,26 @@ public class WuyeController extends BaseController {
 		
 	}
 	
+	/**
+	 * 获取用户绑定的银行卡信息
+	 * @param user
+	 * @throws Exception 
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/getDiscounts", method = RequestMethod.POST)
+	@ResponseBody
+	public BaseResult<Discounts> getDiscountDetail(@ModelAttribute(Constants.USER) User user,
+			@RequestBody DiscountViewReqVO discountViewReqVO) throws Exception {
+		
+		Discounts discountDetail = new Discounts();
+		log.info("discountViewReqVO : " + discountViewReqVO);
+		DiscountViewRequestDTO dto = new DiscountViewRequestDTO();
+		BeanUtils.copyProperties(discountViewReqVO, dto);
+		dto.setUser(user);
+		log.info("discountViewRequestDTO : " + dto);
+		discountDetail = wuyeService.getDiscounts(dto);
+
+		return BaseResult.successResult(discountDetail);
+	}
 	
 }

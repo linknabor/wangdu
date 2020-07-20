@@ -18,6 +18,7 @@ import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.dto.SignInOutDTO;
 import com.yumu.hexie.integration.wuye.req.BillDetailRequest;
 import com.yumu.hexie.integration.wuye.req.BillStdRequest;
+import com.yumu.hexie.integration.wuye.req.CheckServiceOperatorRequest;
 import com.yumu.hexie.integration.wuye.req.DiscountViewRequest;
 import com.yumu.hexie.integration.wuye.req.OtherPayRequest;
 import com.yumu.hexie.integration.wuye.req.PaySmsCodeRequest;
@@ -62,6 +63,7 @@ public class WuyeUtil2 {
 	private static final String QRCODE_PAY_SERVICE_URL = "getServiceSDO.do";	//二维码支付服务信息
 	private static final String QRCODE_URL = "getQRCodeSDO.do";	//二维码支付服务信息
 	private static final String SIGN_IN_OUT_URL = "signInSDO.do";	//二维码支付服务信息
+	private static final String CHECK_OPERATOR_URL = "isServiceOperSDO.do";	//二维码支付服务信息
 	
 	/**
 	 * 标准版查询账单
@@ -328,6 +330,26 @@ public class WuyeUtil2 {
 		
 	}
 	
+	/**
+	 * 查看是为物业收费人员
+	 * @param user
+	 * @return
+	 * @throws Exception
+	 */
+	public BaseResult<String> isServiceOperator(User user) throws Exception {
+		
+		String requestUrl = requestUtil.getRequestUrl(user, "");
+		requestUrl += CHECK_OPERATOR_URL;
+		
+		CheckServiceOperatorRequest request = new CheckServiceOperatorRequest();
+		request.setUserId(user.getWuyeId());
+		request.setOpenid(user.getOpenid());
+		TypeReference<CommonResponse<String>> typeReference = new TypeReference<CommonResponse<String>>(){};
+		CommonResponse<String> hexieResponse = restUtil.exchange(requestUrl, request, typeReference);
+		BaseResult<String> baseResult = new BaseResult<>();
+		baseResult.setData(hexieResponse.getData());
+		return baseResult;
+	}
 	
 	
 }

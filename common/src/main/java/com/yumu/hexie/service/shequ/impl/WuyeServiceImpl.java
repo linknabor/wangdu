@@ -1,8 +1,6 @@
 package com.yumu.hexie.service.shequ.impl;
 
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.inject.Inject;
 
@@ -21,12 +19,14 @@ import com.yumu.hexie.common.util.TransactionUtil;
 import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.WuyeUtil2;
+import com.yumu.hexie.integration.wuye.dto.DiscountViewRequestDTO;
 import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
+import com.yumu.hexie.integration.wuye.vo.Discounts;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -34,7 +34,6 @@ import com.yumu.hexie.integration.wuye.vo.PaymentInfo;
 import com.yumu.hexie.integration.wuye.vo.WechatPayInfo;
 import com.yumu.hexie.model.community.RegionInfo;
 import com.yumu.hexie.model.community.RegionInfoRepository;
-import com.yumu.hexie.model.market.ServiceOrder;
 import com.yumu.hexie.model.user.BankCard;
 import com.yumu.hexie.model.user.BankCardRepository;
 import com.yumu.hexie.model.user.User;
@@ -305,26 +304,39 @@ public class WuyeServiceImpl<T> implements WuyeService {
 		
 	}
 	
-	public static void main(String[] args) {
+	/**
+	 * 获取缴费优惠信息
+	 * @param discountViewRequestDTO
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public Discounts getDiscounts(DiscountViewRequestDTO discountViewRequestDTO) throws Exception {
 		
+		Discounts discountDetail = wuyeUtil2.getDiscounts(discountViewRequestDTO).getData();
+		return discountDetail;
+	
+	}
+	
+	/**
+	 * 是否为物业二维码收费人员
+	 * @param user
+	 */
+	@Override
+	public Boolean isQrcodeOperator(User user) {
 		
-		Function<Integer, Integer> name = e -> e * 2;
-        Function<Integer, Integer> square = e -> e * e;
-        
-        int value = name.andThen(square).apply(3);
-        System.out.println("andThen value=" + value);
-        int value2 = name.compose(square).apply(3);
-        System.out.println("compose value2=" + value2);
-        //返回一个执行了apply()方法之后只会返回输入参数的函数对象
-        Object identity = Function.identity().apply("huohuo");
-        System.out.println(identity);
-
-        ServiceOrder serviceOrder = new ServiceOrder();
-        Consumer<ServiceOrder> orderConsumer = serviceOrderC -> serviceOrderC.setPrice(100f);
-        orderConsumer.accept(serviceOrder);
-        System.out.println("price:"+serviceOrder.getPrice());
-        
-        
+		Boolean returnData = Boolean.FALSE;
+		if (StringUtils.isEmpty(user.getWuyeId())) {
+			logger.warn("no wuye id, will return . userId : " + user.getId());
+			return returnData;
+		}
+		try {
+			String isOper = wuyeUtil2.isServiceOperator(user).getData();
+			returnData = Boolean.valueOf(isOper);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+		return returnData;
 	}
 	
 	/**
