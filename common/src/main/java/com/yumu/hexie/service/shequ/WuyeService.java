@@ -1,11 +1,13 @@
 package com.yumu.hexie.service.shequ;
 
 import com.yumu.hexie.dto.CommonDTO;
+import com.yumu.hexie.integration.wuye.dto.DiscountViewRequestDTO;
 import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
+import com.yumu.hexie.integration.wuye.vo.Discounts;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -53,5 +55,9 @@ public interface WuyeService {
 	public <T> void fixUserBindedHouses(String userId);
 	//查询是否为二维码收费员
 	Boolean isQrcodeOperator(User user);
+	//获取缴费优惠信息
+	Discounts getDiscounts(DiscountViewRequestDTO discountViewRequestDTO) throws Exception;
+	
+	
 	
 }

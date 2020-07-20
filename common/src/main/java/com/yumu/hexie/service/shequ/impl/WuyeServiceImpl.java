@@ -19,12 +19,14 @@ import com.yumu.hexie.common.util.TransactionUtil;
 import com.yumu.hexie.dto.CommonDTO;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.WuyeUtil2;
+import com.yumu.hexie.integration.wuye.dto.DiscountViewRequestDTO;
 import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.resp.BillListVO;
 import com.yumu.hexie.integration.wuye.resp.CellListVO;
 import com.yumu.hexie.integration.wuye.resp.HouseListVO;
 import com.yumu.hexie.integration.wuye.resp.PayWaterListVO;
+import com.yumu.hexie.integration.wuye.vo.Discounts;
 import com.yumu.hexie.integration.wuye.vo.HexieHouse;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
 import com.yumu.hexie.integration.wuye.vo.PayResult;
@@ -300,6 +302,20 @@ public class WuyeServiceImpl<T> implements WuyeService {
 			
 		}
 		
+	}
+	
+	/**
+	 * 获取缴费优惠信息
+	 * @param discountViewRequestDTO
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public Discounts getDiscounts(DiscountViewRequestDTO discountViewRequestDTO) throws Exception {
+		
+		Discounts discountDetail = wuyeUtil2.getDiscounts(discountViewRequestDTO).getData();
+		return discountDetail;
+	
 	}
 	
 	/**
