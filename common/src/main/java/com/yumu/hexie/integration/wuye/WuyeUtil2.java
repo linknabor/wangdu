@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.yumu.hexie.integration.common.CommonResponse;
 import com.yumu.hexie.integration.common.RequestUtil;
 import com.yumu.hexie.integration.common.RestUtil;
+import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wuye.dto.DiscountViewRequestDTO;
 import com.yumu.hexie.integration.wuye.dto.OtherPayDTO;
 import com.yumu.hexie.integration.wuye.dto.PrepayRequestDTO;
@@ -116,7 +118,11 @@ public class WuyeUtil2 {
 		billDetailRequest.setStmtId(stmtId);
 		billDetailRequest.setBillId(anotherbillIds);
 		billDetailRequest.setOpenid(user.getOpenid());
-		billDetailRequest.setAppid(user.getAppId());
+		String appid = user.getAppId();
+		if (StringUtils.isEmpty(appid)) {
+			appid = ConstantWeChat.APPID;
+		}
+		billDetailRequest.setAppid(appid);
 		
 		TypeReference<CommonResponse<PaymentInfo>> typeReference = new TypeReference<CommonResponse<PaymentInfo>>(){};
 		CommonResponse<PaymentInfo> hexieResponse = restUtil.exchange(requestUrl, billDetailRequest, typeReference);
@@ -170,7 +176,11 @@ public class WuyeUtil2 {
 		
 		PrepayRequest prepayRequest = new PrepayRequest(prepayRequestDTO);
 		prepayRequest.setFromSys(fromSys);
-		prepayRequest.setAppid(user.getAppId());
+		String appid = user.getAppId();
+		if (StringUtils.isEmpty(appid)) {
+			appid = ConstantWeChat.APPID;
+		}
+		prepayRequest.setAppid(appid);
 		
 		TypeReference<CommonResponse<WechatPayInfo>> typeReference = new TypeReference<CommonResponse<WechatPayInfo>>(){};
 		CommonResponse<WechatPayInfo> hexieResponse = restUtil.exchange(requestUrl, prepayRequest, typeReference);
