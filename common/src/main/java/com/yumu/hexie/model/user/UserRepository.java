@@ -51,4 +51,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query(value = "update user set extraOpenId = ?1 where id = ?2 ", nativeQuery = true)
 	public int updateUserExtraOpenId(String extraOpenId, long id);
 	
+	public List<User> findByTel(String tel);
+	
 }

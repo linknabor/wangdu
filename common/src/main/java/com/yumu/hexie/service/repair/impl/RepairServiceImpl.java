@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import com.yumu.hexie.model.market.ServiceOrder;
 import com.yumu.hexie.model.user.Address;
 import com.yumu.hexie.model.user.AddressRepository;
 import com.yumu.hexie.model.user.User;
+import com.yumu.hexie.model.user.UserRepository;
 import com.yumu.hexie.service.common.GotongService;
 import com.yumu.hexie.service.common.UploadService;
 import com.yumu.hexie.service.exception.BizValidateException;
@@ -65,9 +67,11 @@ public class RepairServiceImpl implements RepairService {
     private UploadService uploadService;
     @Inject
     private GotongService gotongService;
-
     @Inject
     private RepairAssignService repairAssignService;
+    @Autowired
+    private UserRepository userRepository;
+    
     /** 
      * @param repairType
      * @return
@@ -328,5 +332,12 @@ public class RepairServiceImpl implements RepairService {
 		repairAssignService.assignOrder(order);
         return order.getId();
 	}
+    
+    @Override
+	public List<User> getHexieUserInfo(String data) {
+		return userRepository.findByTel(data);
+	}
+    
+    
 
 }
