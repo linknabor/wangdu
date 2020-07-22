@@ -80,6 +80,8 @@ public class User extends BaseModel{
 	
 	private String extraOpenId;	//悦生活的openid
 	
+	private String appId;
+	
 	public String getOfficeTel() {
 		return officeTel;
 	}
@@ -453,6 +455,14 @@ public class User extends BaseModel{
 		this.extraOpenId = extraOpenId;
 	}
 
+	public String getAppId() {
+		return appId;
+	}
+
+	public void setAppId(String appId) {
+		this.appId = appId;
+	}
+
 	@Override
 	public String toString() {
 		return "User [realName=" + realName + ", name=" + name + ", tel=" + tel + ", provinceId=" + provinceId
@@ -466,7 +476,7 @@ public class User extends BaseModel{
 				+ ", couponCount=" + couponCount + ", bindAppId=" + bindAppId + ", bindOpenId=" + bindOpenId
 				+ ", shareCode=" + shareCode + ", newRegiste=" + newRegiste + ", total_bind=" + total_bind
 				+ ", sect_id=" + sect_id + ", sect_name=" + sect_name + ", cell_id=" + cell_id + ", cell_addr="
-				+ cell_addr + ", officeTel=" + officeTel + ", extraOpenId=" + extraOpenId + "]";
+				+ cell_addr + ", officeTel=" + officeTel + ", extraOpenId=" + extraOpenId + ", appId=" + appId + "]";
 	}
 
 	

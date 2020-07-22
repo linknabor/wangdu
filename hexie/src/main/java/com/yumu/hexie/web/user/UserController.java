@@ -1,6 +1,8 @@
 package com.yumu.hexie.web.user;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -22,12 +24,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.yumu.hexie.common.Constants;
 import com.yumu.hexie.common.util.StringUtil;
+import com.yumu.hexie.integration.wechat.entity.AccessTokenOAuth;
 import com.yumu.hexie.integration.wechat.entity.user.UserWeiXin;
 import com.yumu.hexie.model.localservice.HomeServiceConstant;
 import com.yumu.hexie.model.user.User;
 import com.yumu.hexie.service.common.SmsService;
 import com.yumu.hexie.service.exception.BizValidateException;
 import com.yumu.hexie.service.o2o.OperatorService;
+import com.yumu.hexie.service.shequ.WuyeService;
 import com.yumu.hexie.service.user.UserService;
 import com.yumu.hexie.web.BaseController;
 import com.yumu.hexie.web.BaseResult;
@@ -46,8 +50,8 @@ public class UserController extends BaseController{
 	private SmsService smsService;
 	@Autowired
     private OperatorService operatorService;
-    
-    
+    @Autowired
+    private WuyeService wuyeService;
 
     @Value(value = "${testMode}")
     private Boolean testMode;
@@ -75,6 +79,7 @@ public class UserController extends BaseController{
 			if(!needClearSession){
 			    session.setAttribute(Constants.USER, user);
 			    UserInfo userInfo = new UserInfo(user,operatorService.isOperator(HomeServiceConstant.SERVICE_TYPE_REPAIR,user.getId()));
+			    userInfo.setQrcodeOperator(wuyeService.isQrcodeOperator(user));
 			    long endTime = System.currentTimeMillis();
 				log.info("user:" + user.getName() + "登陆，耗时：" + ((endTime-beginTime)/1000));
 			    return new BaseResult<UserInfo>().success(userInfo);
@@ -198,38 +203,39 @@ public class UserController extends BaseController{
         }
     }
     
-//    /**
-//     * 绑定主公众号的openid
-//     * @param user
-//     * @param code
-//     * @return
-//     * @throws Exception
-//     */
-//    @RequestMapping(value = "/bindWechat/{code}", method = RequestMethod.POST)
-//    @ResponseBody
-//    public BaseResult<String> bindMain(@ModelAttribute(Constants.USER)User user, @PathVariable String code) throws Exception {
-//    	
-//    	User currUser = userService.getById(user.getId());
-//    	if (currUser == null) {
-//    		return new BaseResult<String>().failMsg("user does not exist !");
-//		}
-//    	if (StringUtil.isEmpty(currUser.getBindOpenId())) {
-//    		String openId = "";
-//        	if (StringUtil.isNotEmpty(code)) {
-//        		try {
-//    				openId = userService.getBindOrSubscibeUserOpenIdByCode(code);
-//    				currUser.setBindOpenId(openId);
-//    	        	currUser.setBindAppId(ConstantWeChat.BIND_APPID);
-//    	        	userService.save(currUser);
-//    			} catch (Exception e) {
-//    				throw new BizValidateException("get bind openid failed ! ");
-//    			}
-//        	}
-//        	
-//		}
-//    	
-//    	return new BaseResult<String>().success("bind succeeded!");
-//    	
-//    }
+    /**
+     * 静默授权获取用户openid
+     * @param code
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/authorize/{code}/{appid}", method = RequestMethod.POST)
+	@ResponseBody
+    public BaseResult<Map<String, String>> authorize(@PathVariable String code, @PathVariable String appid) throws Exception {
+		
+		Map<String, String> map = new HashMap<>();
+		if (StringUtil.isNotEmpty(code)) {
+			AccessTokenOAuth oauth = userService.getAccessTokenOAuth(code, appid);
+	    	map.put("openid", oauth.getOpenid());
+		}
+		return new BaseResult<Map<String, String>>().success(map);
+    }
     
+    /**
+     * 静默授权获取用户openid-alipay
+     * @param code
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/authorizeAlipay/{code}", method = RequestMethod.POST)
+	@ResponseBody
+    public BaseResult<Map<String, String>> authorizeAlipay(@PathVariable String code) throws Exception {
+		
+		Map<String, String> map = new HashMap<>();
+		if (StringUtil.isNotEmpty(code)) {
+			AccessTokenOAuth oauth = userService.getAlipayAuth(code);
+	    	map.put("userid", oauth.getOpenid());
+		}
+		return new BaseResult<Map<String, String>>().success(map);
+    }
 }
