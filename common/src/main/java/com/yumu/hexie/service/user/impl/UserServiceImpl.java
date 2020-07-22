@@ -3,6 +3,7 @@ package com.yumu.hexie.service.user.impl;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 
@@ -14,9 +15,18 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipaySystemOauthTokenRequest;
+import com.alipay.api.response.AlipaySystemOauthTokenResponse;
 import com.yumu.hexie.common.util.StringUtil;
+import com.yumu.hexie.integration.wechat.constant.ConstantAlipay;
+import com.yumu.hexie.integration.wechat.entity.AccessTokenOAuth;
 import com.yumu.hexie.integration.wechat.entity.user.UserWeiXin;
+import com.yumu.hexie.integration.wechat.service.OAuthService;
 import com.yumu.hexie.integration.wuye.WuyeUtil;
 import com.yumu.hexie.integration.wuye.resp.BaseResult;
 import com.yumu.hexie.integration.wuye.vo.HexieUser;
@@ -53,6 +63,18 @@ public class UserServiceImpl implements UserService {
     public List<User> getByOpenId(String openId) {
 		return userRepository.findByOpenid(openId);
 	}
+    
+    private AlipayClient alipayClient;
+	
+	@PostConstruct
+	public void initAlipay() {
+		
+		alipayClient = new DefaultAlipayClient(ConstantAlipay.ALIPAY_GATEWAY, ConstantAlipay.APPID, 
+				ConstantAlipay.APP_PRIVATE_KEY, ConstantAlipay.DATAFORMAT, ConstantAlipay.CHARSET, 
+				ConstantAlipay.ALIPAY_PUBLIC_KEY, ConstantAlipay.SIGNTYPE); 
+		
+	}
+    
     
     @Override
 	public UserWeiXin getOrSubscibeUserByCode(String code) {
@@ -219,6 +241,41 @@ public class UserServiceImpl implements UserService {
 			isDuplicateRequest = true;
 		}
 		return isDuplicateRequest;
+	}
+	
+	/**
+	 * 获取用户授权信息(静默)
+	 * @param code
+	 * @param appid
+	 * @return
+	 */
+	@Override
+	public AccessTokenOAuth getAccessTokenOAuth(String code, String appid){
+		
+		Assert.hasText(code, "code不能为空。");
+		Assert.hasText(appid, "appid不能为空。");
+		AccessTokenOAuth auth =  OAuthService.getOAuthAccessToken(code);
+        return auth;
+		
+	}
+	
+	@Override
+	public AccessTokenOAuth getAlipayAuth(String code) {
+		
+		Assert.hasText(code, "code不能为空。");
+		AlipaySystemOauthTokenRequest request = new AlipaySystemOauthTokenRequest();
+		request.setCode(code);
+		request.setGrantType(ConstantAlipay.AUTHORIZATION_TYPE);
+		AccessTokenOAuth oAuth = new AccessTokenOAuth();
+		try {
+		    AlipaySystemOauthTokenResponse oauthTokenResponse = alipayClient.execute(request);
+		    oAuth.setOpenid(oauthTokenResponse.getUserId());
+		    oAuth.setAccessToken(oauthTokenResponse.getAccessToken());
+		} catch (AlipayApiException e) {
+			throw new BizValidateException(e.getMessage(), e);
+		}
+		return oAuth;
+		
 	}
 	
 }

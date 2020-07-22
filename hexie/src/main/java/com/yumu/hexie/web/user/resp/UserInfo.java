@@ -59,6 +59,7 @@ public class UserInfo implements Serializable {
     private long id;
     private String sect_id;
     private String officeTel;
+    private boolean isQrcodeOperator;
 
     public String getOfficeTel() {
 		return officeTel;
@@ -260,6 +261,12 @@ public class UserInfo implements Serializable {
 	}
 	public void setOpenid(String openid) {
 		this.openid = openid;
+	}
+	public boolean isQrcodeOperator() {
+		return isQrcodeOperator;
+	}
+	public void setQrcodeOperator(boolean isQrcodeOperator) {
+		this.isQrcodeOperator = isQrcodeOperator;
 	}
     
     
