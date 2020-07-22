@@ -47,4 +47,5 @@ public interface RepairService {
     public List<RepairProject> queryProject(int repairType);
     
     public Long reassgin(long orderId, User user);
+	List<User> getHexieUserInfo(String data);
 }
