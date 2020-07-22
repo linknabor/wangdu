@@ -11,6 +11,7 @@ import javax.persistence.Transient;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import com.yumu.hexie.common.util.StringUtil;
+import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.model.BaseModel;
 
 @Entity
@@ -80,7 +81,7 @@ public class User extends BaseModel{
 	
 	private String extraOpenId;	//悦生活的openid
 	
-	private String appId;
+	private String appId = ConstantWeChat.APPID;
 	
 	public String getOfficeTel() {
 		return officeTel;
@@ -456,6 +457,9 @@ public class User extends BaseModel{
 	}
 
 	public String getAppId() {
+		if (StringUtil.isEmpty(appId)) {
+			appId = ConstantWeChat.APPID;
+		}
 		return appId;
 	}
 
