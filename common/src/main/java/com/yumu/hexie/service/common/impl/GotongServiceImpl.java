@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.yumu.hexie.common.util.ConfigUtil;
+import com.yumu.hexie.integration.notify.PayNotification.AccountNotification;
 import com.yumu.hexie.integration.wechat.constant.ConstantWeChat;
 import com.yumu.hexie.integration.wechat.entity.customer.Article;
 import com.yumu.hexie.integration.wechat.entity.customer.News;
@@ -62,6 +63,8 @@ public class GotongServiceImpl implements GotongService {
     public static String SUBSCRIBE_DETAIL = ConfigUtil.get("subscribeDetail");
     
     public static String THREAD_DETAIL = ConfigUtil.get("threadDetail");	//--> ori templateUrl
+    
+    public static String PAY_NOTIFY_URL = ConfigUtil.get("payNotifyUrl");
     
     public static Map<String, String>categoryMap;
     
@@ -208,5 +211,16 @@ public class GotongServiceImpl implements GotongService {
 		TemplateMsgService.sendThreadReplyMsg(thread, accessToken);
 	
     }
+    
+    /**
+	 * 交易到账通知
+	 */
+	@Override
+	public void sendPayNotification(AccountNotification accountNotify) {
+		
+		String accessToken = systemConfigService.queryWXAToken();
+		TemplateMsgService.sendPayNotification(accountNotify, accessToken);
+		
+	}
     
 }
