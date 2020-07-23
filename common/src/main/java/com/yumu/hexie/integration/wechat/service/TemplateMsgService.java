@@ -12,7 +12,9 @@ import org.springframework.util.StringUtils;
 import com.yumu.hexie.common.util.ConfigUtil;
 import com.yumu.hexie.common.util.DateUtil;
 import com.yumu.hexie.common.util.JacksonJsonUtil;
+import com.yumu.hexie.integration.notify.PayNotification.AccountNotification;
 import com.yumu.hexie.integration.wechat.entity.common.WechatResponse;
+import com.yumu.hexie.integration.wechat.entity.templatemsg.PayNotifyMsgVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.PaySuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.RegisterSuccessVO;
 import com.yumu.hexie.integration.wechat.entity.templatemsg.RepairOrderVO;
@@ -41,6 +43,7 @@ public class TemplateMsgService {
 	public static String REPAIR_ASSIGN_TEMPLATE = ConfigUtil.get("reapirAssginTemplate");
 	public static String YUYUE_ASSIGN_TEMPLATE = ConfigUtil.get("yuyueNoticeTemplate");
 	public static String THREAD_PUB_TEMPLATE = ConfigUtil.get("threadPubTemplate");	//-->ori templateId
+	public static final String TEMPLATE_TYPE_PAY_NOTIFY = ConfigUtil.get("payNotifyTemplate");
 	
 	/**
 	 * 模板消息发送
@@ -237,6 +240,32 @@ public class TemplateMsgService {
     	sendMsg(msg, accessToken);
     	
     }
+    
+    /**
+     * 支付到账通知
+     * @param openid
+     * @param accessToken
+     * @param appId
+     */
+    public static void sendPayNotification(AccountNotification accountNotification, String accessToken) {
+    	
+    	PayNotifyMsgVO vo = new PayNotifyMsgVO();
+		vo.setTitle(new TemplateItem("您好，您有一笔订单收款成功。此信息仅供参考，请最终以商户端实际到账结果为准。"));
+	  	vo.setTranAmt(new TemplateItem(accountNotification.getFeePrice().toString()));
+	  	vo.setPayMethod(new TemplateItem(accountNotification.getPayMethod()));
+	  	vo.setTranDateTime(new TemplateItem(accountNotification.getTranDate()));
+	  	vo.setTranType(new TemplateItem(accountNotification.getFeeName()));
+	  	vo.setRemark(new TemplateItem(accountNotification.getRemark()));
+    	
+	  	TemplateMsg<PayNotifyMsgVO>msg = new TemplateMsg<PayNotifyMsgVO>();
+    	msg.setData(vo);
+    	msg.setTemplate_id(TEMPLATE_TYPE_PAY_NOTIFY);
+    	String url = GotongServiceImpl.PAY_NOTIFY_URL;
+    	msg.setUrl(url);
+    	msg.setTouser(accountNotification.getUser().getOpenid());
+    	TemplateMsgService.sendMsg(msg, accessToken);
+
+	}
     
 
 }

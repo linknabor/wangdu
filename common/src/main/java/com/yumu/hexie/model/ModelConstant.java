@@ -291,4 +291,16 @@ public class ModelConstant {
 	public static final int COLLOCATION_STATUS_INVAILID = 2;
 
 	public static final String KEY_USER_LOGIN = "userLoginSession_";
+	
+	public static final String KEY_MAINTANANCE_SWITCH = "maintananceSwitch";
+
+	public static final String KEY_NOTIFY_PAY_QUEUE = "queue:notify:pay";
+	public static final String KEY_NOTIFY_SERVICE_QUEUE = "queue:notify:service";
+	public static final String KEY_UPDATE_OPERATOR_QUEUE = "queue:operator:update";
+	public static final String KEY_UPDATE_SERVICE_CFG_QUEUE = "queue:servicecfg:update";
+	public static final String KEY_ORDER_ACCEPTED = "lock:serviceOrder:";
+	
+	public static final String KEY_NOITFY_PAY_DUPLICATION_CHECK = "lock:payNotification:";
+	public static final String KEY_ASSIGN_CS_ORDER_DUPLICATION_CHECK = "lock:assginCsOrder:";
+
 }		
