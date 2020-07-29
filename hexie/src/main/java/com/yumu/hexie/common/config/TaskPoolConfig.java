@@ -3,15 +3,21 @@ package com.yumu.hexie.common.config;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 public class TaskPoolConfig {
+
+	private static Logger logger = LoggerFactory.getLogger(TaskPoolConfig.class);
 	
 	@Bean("taskExecutor")
     public Executor taskExecutor() {
+		
+		logger.info("init taskExecutor ...");
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         /*
          * threadcount = tasks/(1/taskcost) =tasks*taskcost =  (500~1000)*0.5 = 50~100 个线程。corePoolSize设置应该大于50。根据8020原则，如果80%的每秒任务数小于800，那么corePoolSize设置为80即可
