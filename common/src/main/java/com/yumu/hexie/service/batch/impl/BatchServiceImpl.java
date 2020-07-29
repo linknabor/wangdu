@@ -22,6 +22,8 @@ public class BatchServiceImpl implements BatchService {
 	@PostConstruct
 	public void runBatch() {
 		
+		logger.info("异步队列任务 start ...");
+		
 		if (ConstantWeChat.isMainServer()) {	//BK程序不跑下面的队列轮询
 			return;
 		}
