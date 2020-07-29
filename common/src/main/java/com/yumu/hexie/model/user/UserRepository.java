@@ -53,4 +53,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	
 	public List<User> findByTel(String tel);
 	
+	public List<User> findByWuyeId(String wuyeId);
+
 }

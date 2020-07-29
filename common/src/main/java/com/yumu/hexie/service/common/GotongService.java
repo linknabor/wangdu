@@ -4,6 +4,7 @@
  */
 package com.yumu.hexie.service.common;
 
+import com.yumu.hexie.integration.notify.PayNotification.AccountNotification;
 import com.yumu.hexie.model.community.Thread;
 import com.yumu.hexie.model.localservice.bill.YunXiyiBill;
 import com.yumu.hexie.model.localservice.repair.RepairOrder;
@@ -32,5 +33,7 @@ public interface GotongService {
     public void sendThreadPubNotify(User user, Thread thread);
 
 	void sendThreadReplyMsg(Thread thread);
+
+	void sendPayNotification(AccountNotification accountNotify);
 
 }
