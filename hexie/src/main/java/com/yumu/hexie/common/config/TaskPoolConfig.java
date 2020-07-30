@@ -18,6 +18,7 @@ public class TaskPoolConfig {
     public Executor taskExecutor() {
 		
 		logger.info("init taskExecutor ...");
+
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         /*
          * threadcount = tasks/(1/taskcost) =tasks*taskcost =  (500~1000)*0.5 = 50~100 个线程。corePoolSize设置应该大于50。根据8020原则，如果80%的每秒任务数小于800，那么corePoolSize设置为80即可
