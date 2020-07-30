@@ -4,6 +4,7 @@
  */
 package com.yumu.hexie.service.common.impl;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +15,17 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.yumu.hexie.common.util.ConfigUtil;
 import com.yumu.hexie.integration.notify.PayNotification.AccountNotification;
@@ -66,7 +76,12 @@ public class GotongServiceImpl implements GotongService {
     
     public static String PAY_NOTIFY_URL = ConfigUtil.get("payNotifyUrl");
     
+    public static String COMMENT_NOTIFY_URL = ConfigUtil.get("commentNotifyUrl");
+    
     public static Map<String, String>categoryMap;
+    
+    @Autowired
+    private RestTemplate restTemplate;
     
     @PostConstruct   
     public void init(){
@@ -207,9 +222,22 @@ public class GotongServiceImpl implements GotongService {
 	@Override
 	public void sendThreadReplyMsg(com.yumu.hexie.model.community.Thread thread) {
     	
-    	String accessToken = systemConfigService.queryWXAToken();
-		TemplateMsgService.sendThreadReplyMsg(thread, accessToken);
-	
+    	LinkedMultiValueMap<String, String>paramsMap = new LinkedMultiValueMap<>();
+    	paramsMap.add("threadId", String.valueOf(thread.getThreadId()));
+    	paramsMap.add("userName", thread.getUserName());
+    	paramsMap.add("userTel", thread.getUserTel());
+    	paramsMap.add("userAddress", thread.getUserAddress());
+    	paramsMap.add("extraOpenId", thread.getExtraOpenId());
+    	
+    	UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(COMMENT_NOTIFY_URL);
+		URI uri = builder.queryParams(paramsMap).build().encode().toUri();
+		
+		HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(null, headers);
+        LOG.info("requestUrl : " + COMMENT_NOTIFY_URL + ", param : " + paramsMap);
+		ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, String.class);
+		LOG.info("response is : " + responseEntity.getBody());
     }
     
     /**
