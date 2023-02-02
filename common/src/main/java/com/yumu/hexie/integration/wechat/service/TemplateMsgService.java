@@ -260,8 +260,8 @@ public class TemplateMsgService {
 	  	TemplateMsg<PayNotifyMsgVO>msg = new TemplateMsg<PayNotifyMsgVO>();
     	msg.setData(vo);
     	msg.setTemplate_id(TEMPLATE_TYPE_PAY_NOTIFY);
-    	String url = GotongServiceImpl.PAY_NOTIFY_URL;
-    	msg.setUrl(url);
+    	//String url = GotongServiceImpl.PAY_NOTIFY_URL;
+    	//msg.setUrl(url);
     	msg.setTouser(accountNotification.getUser().getOpenid());
     	TemplateMsgService.sendMsg(msg, accessToken);
 
